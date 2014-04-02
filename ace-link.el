@@ -1,4 +1,4 @@
-;;; ace-link.el --- Ace jump to visible links
+;;; ace-link.el --- Quickly follow links using `ace-jump-mode'
 
 ;; Copyright (C) 2014 Oleh Krehel
 
