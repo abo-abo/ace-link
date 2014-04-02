@@ -11,6 +11,9 @@ turns this into an O(1) operation, or at least O(log(N)) if you
 manage to squeeze thousands of links in one screen:).
 It does so by assigning a letter to each link using `ace-jump-mode`.
 
+## Install
+Either clone from here or install from [MELPA](http://melpa.milkbox.net/) (recommended).
+
 ## Setup
 
 Just call `ace-link-setup-default` to bind `ace-link-info` and `ace-link-help` to
@@ -20,3 +23,9 @@ close to `l` which is the shortcut to go back.
 ## Usage
 
 Just press `o` when you're in `Info-mode` or `help-mode`.
+
+Here's a screencast of browsing Info using `ace-link-info`:
+
+![gif][screencast-1]
+
+[screencast-1]: https://raw.githubusercontent.com/abo-abo/ace-link/gh-pages/screencast-1.gif
