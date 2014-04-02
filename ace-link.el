@@ -28,45 +28,49 @@
 ;; This package offers an alternative to tabbing through links in
 ;; buffers, for instance, in an Info buffer.  `ace-jump-mode' is used
 ;; to turn opening a link from an O(N) operation into an O(1).
+;;
+;; Use `ace-link-setup-default' to set up the default bindings, which currently
+;; bind e.g. `ace-link-info' to "o", which was previously unbound and is
+;; close to "l" (which by default goes back).
 
 ;;; Code:
 
 (require 'noflet)
 (require 'ace-jump-mode)
 
+;; ——— Macros ——————————————————————————————————————————————————————————————————
+(defmacro ali-generic (collector &rest follower)
+  "Ace jump to candidates of COLLECTOR using FOLLOWER."
+  (declare (indent 1))
+  `(noflet ((ace-jump-search-candidate (str va-list)
+              (mapcar (lambda (x)
+                        (make-aj-position
+                         :offset (1- x)
+                         :visual-area (car va-list)))
+                      ,collector)))
+     (setq ace-jump-mode-end-hook
+       (list (lambda ()
+               (setq ace-jump-mode-end-hook)
+               ,@follower)))
+     (ace-jump-do "")))
+
 ;; ——— Interactive —————————————————————————————————————————————————————————————
 ;;;###autoload
 (defun ace-link-info ()
   "Ace jump to links in `Info-mode' buffers."
   (interactive)
-  (noflet ((ace-jump-search-candidate (str va-list)
-             (mapcar (lambda (x)
-                       (make-aj-position
-                        :offset (1- x)
-                        :visual-area (car va-list)))
-                     (ali--info-collect-references))))
-    (setq ace-jump-mode-end-hook
-      (list `(lambda ()
-               (setq ace-jump-mode-end-hook)
-               (Info-follow-nearest-node))))
-    (ace-jump-do "")))
+  (ali-generic
+      (ali--info-collect-references)
+    (Info-follow-nearest-node)))
 
 ;;;###autoload
 (defun ace-link-help ()
   "Ace jump to links in `help-mode' buffers."
   (interactive)
-  (noflet ((ace-jump-search-candidate (str va-list)
-             (mapcar (lambda (x)
-                       (make-aj-position
-                        :offset (1- x)
-                        :visual-area (car va-list)))
-                     (ali--help-collect-references))))
-    (setq ace-jump-mode-end-hook
-      (list `(lambda ()
-               (setq ace-jump-mode-end-hook)
-               (forward-char 1)
-               (push-button))))
-    (ace-jump-do "")))
+  (ali-generic
+      (ali--help-collect-references)
+    (forward-char 1)
+    (push-button)))
 
 ;; ——— Utility —————————————————————————————————————————————————————————————————
 (defun ali--info-collect-references ()
