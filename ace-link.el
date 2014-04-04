@@ -77,6 +77,14 @@
     (forward-char 1)
     (push-button)))
 
+;;;###autoload
+(defun ace-link-org ()
+  "Ace jump to links in `org-mode' buffers."
+  (interactive)
+  (ali-generic
+      (ali--org-collect-references)
+    (org-open-at-point)))
+
 ;; ——— Utility —————————————————————————————————————————————————————————————————
 (defun ali--info-collect-references ()
   "Collect the positions of visible links in the current `Info-mode' buffer."
@@ -106,6 +114,19 @@
         (setq skip (text-property-any (point) (point-max)
                                       'button nil))))
     (nreverse candidates)))
+
+(defun ali--org-collect-references ()
+  (let ((end (window-end))
+        points)
+    (save-excursion
+      (goto-char (window-start))
+      (while (re-search-forward org-any-link-re end t)
+        ;; Check that the link is visible. Look at the last character
+        ;; position in the link ("...X]]") to cover links with and
+        ;; without a description.
+        (when (not (outline-invisible-p (- (match-end 0) 3)))
+          (push (+ (match-beginning 0) 1) points)))
+      (nreverse points))))
 
 ;;;###autoload
 (defun ace-link-setup-default ()
