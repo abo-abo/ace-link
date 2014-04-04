@@ -61,12 +61,12 @@
   (interactive)
   (ali-generic
       (ali--info-collect-references)
-    (let ((end (window-end))))
-    (while (not (ignore-errors
-                  (Info-follow-nearest-node)))
-      (forward-char 1)
-      (when (> (point) end)
-        (error "Could not follow link")))))
+    (let ((end (window-end)))
+      (while (not (ignore-errors
+                    (Info-follow-nearest-node)))
+        (forward-char 1)
+        (when (> (point) end)
+          (error "Could not follow link"))))))
 
 ;;;###autoload
 (defun ace-link-help ()
