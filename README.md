@@ -16,9 +16,17 @@ Either clone from here or install from [MELPA](http://melpa.milkbox.net/) (recom
 
 ## Setup
 
-Just call `ace-link-setup-default` to bind `ace-link-info` and `ace-link-help` to
-`o` in their respective modes. This shortcut was previously unbound and is very
+Put this in your `~/.emacs`:
+
+    (ace-link-setup-default)
+
+This will bind `ace-link-info` and `ace-link-help` to `o` in their
+respective modes. This shortcut was previously unbound and is very
 close to `l` which is the shortcut to go back.
+
+To bind `ace-link-org`, use something like this:
+
+    (define-key org-mode-map (kbd "M-o") 'ace-link-org)
 
 ## Usage
 
