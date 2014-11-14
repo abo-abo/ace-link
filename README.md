@@ -1,4 +1,4 @@
-# ace-window
+# ace-link
 
 **GNU Emacs package for selecting a link to jump to**
 
