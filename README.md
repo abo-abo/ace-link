@@ -28,6 +28,11 @@ To bind `ace-link-org`, use something like this:
 
     (define-key org-mode-map (kbd "M-o") 'ace-link-org)
 
+If you use `ert`, `ace-link-help` also works on `ert` results:
+
+    (require 'ert)
+    (define-key ert-results-mode-map "o" 'ace-link-help)
+
 ## Usage
 
 Just press `o` when you're in `Info-mode` or `help-mode`.
