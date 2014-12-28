@@ -52,7 +52,8 @@
        (list (lambda ()
                (setq ace-jump-mode-end-hook)
                ,@follower)))
-     (ace-jump-do "")))
+     (let ((ace-jump-mode-scope 'window))
+       (ace-jump-do ""))))
 
 ;; ——— Interactive —————————————————————————————————————————————————————————————
 ;;;###autoload
