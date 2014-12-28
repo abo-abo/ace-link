@@ -4,7 +4,7 @@
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; Package-Requires: ((ace-jump-mode "2.0") (noflet "0.0.10"))
 ;; Keywords: convenience, links
 
@@ -78,6 +78,15 @@
     (push-button)))
 
 ;;;###autoload
+(defun ace-link-eww ()
+  "Ace jump to links in `eww-mode' buffers."
+  (interactive)
+  (ali-generic
+      (ali--eww-collect-references)
+    (forward-char 1)
+    (eww-follow-link)))
+
+;;;###autoload
 (defun ace-link-org ()
   "Ace jump to links in `org-mode' buffers."
   (interactive)
@@ -115,6 +124,25 @@
                                       'button nil))))
     (nreverse candidates)))
 
+(defun ali--eww-collect-references ()
+  "Collect the positions of visible links in the current `eww' buffer."
+  (save-excursion
+    (save-restriction
+      (narrow-to-region
+       (window-start)
+       (window-end))
+      (goto-char (point-min))
+      (let ((skip (text-property-any (point) (point-max)
+                                     'help-echo nil))
+            candidates)
+        (while (setq skip (text-property-not-all skip (point-max)
+                                                 'help-echo nil))
+          (goto-char skip)
+          (push skip candidates)
+          (setq skip (text-property-any (point) (point-max)
+                                        'help-echo nil)))
+        (nreverse candidates)))))
+
 (defun ali--org-collect-references ()
   (let ((end (window-end))
         points)
@@ -134,7 +162,10 @@
   (require 'info)
   (define-key Info-mode-map "o" 'ace-link-info)
   (require 'help-mode)
-  (define-key help-mode-map "o" 'ace-link-help))
+  (define-key help-mode-map "o" 'ace-link-help)
+  (require 'eww)
+  (define-key eww-link-keymap "o" 'ace-link-eww)
+  (define-key eww-mode-map "o" 'ace-link-eww))
 
 (provide 'ace-link)
 
