@@ -32,6 +32,8 @@
 ;; Use `ace-link-setup-default' to set up the default bindings, which currently
 ;; bind e.g. `ace-link-info' to "o", which was previously unbound and is
 ;; close to "l" (which by default goes back).
+;;
+;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode'.
 
 ;;; Code:
 
@@ -39,15 +41,15 @@
 (require 'ace-jump-mode)
 
 ;; ——— Macros ——————————————————————————————————————————————————————————————————
-(defmacro ali-generic (collector &rest follower)
-  "Ace jump to candidates of COLLECTOR using FOLLOWER."
+(defmacro ali-generic (candidates &rest follower)
+  "Ace jump to CANDIDATES using FOLLOWER."
   (declare (indent 1))
   `(noflet ((ace-jump-search-candidate (str va-list)
               (mapcar (lambda (x)
                         (make-aj-position
                          :offset (1- x)
                          :visual-area (car va-list)))
-                      ,collector)))
+                      ,candidates)))
      (setq ace-jump-mode-end-hook
        (list (lambda ()
                (setq ace-jump-mode-end-hook)
