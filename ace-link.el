@@ -136,8 +136,8 @@
       (let ((skip (text-property-any (point) (point-max)
                                      'help-echo nil))
             candidates)
-        (while (setq skip (text-property-not-all skip (point-max)
-                                                 'help-echo nil))
+        (while (setq skip (text-property-not-all
+                           skip (point-max) 'help-echo nil))
           (goto-char skip)
           (push skip candidates)
           (setq skip (text-property-any (point) (point-max)
@@ -160,13 +160,14 @@
 ;;;###autoload
 (defun ace-link-setup-default ()
   "Setup the defualt shortcuts."
-  (require 'info)
-  (define-key Info-mode-map "o" 'ace-link-info)
-  (require 'help-mode)
-  (define-key help-mode-map "o" 'ace-link-help)
-  (require 'eww)
-  (define-key eww-link-keymap "o" 'ace-link-eww)
-  (define-key eww-mode-map "o" 'ace-link-eww))
+  (eval-after-load "info"
+    '(define-key Info-mode-map "o" 'ace-link-info))
+  (eval-after-load "help-mode"
+    '(define-key help-mode-map "o" 'ace-link-help))
+  (eval-after-load "eww"
+    '(progn
+      (define-key eww-link-keymap "o" 'ace-link-eww)
+      (define-key eww-mode-map "o" 'ace-link-eww))))
 
 (provide 'ace-link)
 
