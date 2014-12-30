@@ -4,12 +4,11 @@
 
 ## What and why
 
-Currently to jump to a link in an `Info-mode` or `help-mode` or `org-mode` or `eww-mode` buffer,
-you can tab through the links to select the one you want.  This is an
-O(N) operation, where the N is the amount of links.  This package
-turns this into an O(1) operation, or at least O(log(N)) if you
-manage to squeeze thousands of links in one screen:).
-It does so by assigning a letter to each link using `ace-jump-mode`.
+Currently, to jump to a link in an `Info-mode` or `help-mode` or `org-mode` or `eww-mode`
+buffer, you can tab through the links to select the one you want.  This is an O(N)
+operation, where the N is the amount of links.  This package turns this into an O(1)
+operation, or at least O(log(N)) if you manage to squeeze thousands of links in one
+screen.  It does so by assigning a letter to each link using `ace-jump-mode`.
 
 ## Install
 Either clone from here or install from [MELPA](http://melpa.milkbox.net/) (recommended).
@@ -20,11 +19,16 @@ Put this in your `~/.emacs`:
 
     (ace-link-setup-default)
 
-This will bind `ace-link-info` and `ace-link-help` to `o` in their
-respective modes. This shortcut was previously unbound and is very
-close to `l` which is the shortcut to go back.
+This will bind <kbd>o</kbd> to:
 
-To bind `ace-link-org`, use something like this:
+- `ace-link-info` in `Info-mode`
+- `ace-link-help` in `help-mode`
+- `ace-link-eww` in `eww-mode`
+
+This shortcut is usually unbound and is very close to <kbd>l</kbd> which is the
+default shortcut to go back.
+
+To bind `ace-link-org`, you can use something like this:
 
     (define-key org-mode-map (kbd "M-o") 'ace-link-org)
 
@@ -35,7 +39,8 @@ If you use `ert`, `ace-link-help` also works on `ert` results:
 
 ## Usage
 
-Just press `o` when you're in `Info-mode` or `help-mode` or `eww-mode`.
+Just press <kbd>o</kbd> when you're in `Info-mode` or `help-mode` or
+`eww-mode`.
 
 Here's a screencast of browsing Info using `ace-link-info`:
 
