@@ -5,7 +5,7 @@
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
 ;; Version: 0.2.0
-;; Package-Requires: ((ace-jump-mode "2.0") (noflet "0.0.10"))
+;; Package-Requires: ((ace-jump-mode "2.0"))
 ;; Keywords: convenience, links
 
 ;; This file is not part of GNU Emacs
@@ -37,23 +37,35 @@
 
 ;;; Code:
 
-(require 'noflet)
 (require 'ace-jump-mode)
 
 ;; ——— Macros ——————————————————————————————————————————————————————————————————
+(defmacro ali-flet (binding &rest body)
+  "Temporarily override BINDING and execute BODY."
+  (declare (indent 1))
+  (let* ((name (car binding))
+         (old (cl-gensym (symbol-name name))))
+    `(let ((,old (symbol-function ',name)))
+       (unwind-protect
+            (progn
+              (fset ',name (lambda ,@(cdr binding)))
+              ,@body)
+         (fset ',name ,old)))))
+
 (defmacro ali-generic (candidates &rest follower)
   "Ace jump to CANDIDATES using FOLLOWER."
   (declare (indent 1))
-  `(noflet ((ace-jump-search-candidate (str va-list)
+  `(ali-flet (ace-jump-search-candidate
+              (str va-list)
               (mapcar (lambda (x)
                         (make-aj-position
                          :offset (1- x)
                          :visual-area (car va-list)))
-                      ,candidates)))
+                      ,candidates))
      (setq ace-jump-mode-end-hook
-       (list (lambda ()
-               (setq ace-jump-mode-end-hook)
-               ,@follower)))
+           (list (lambda ()
+                   (setq ace-jump-mode-end-hook)
+                   ,@follower)))
      (let ((ace-jump-mode-scope 'window))
        (ace-jump-do ""))))
 
