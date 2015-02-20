@@ -38,6 +38,12 @@
 ;;; Code:
 
 (require 'ace-jump-mode)
+(declare-function Info-next-reference "info")
+(declare-function Info-follow-nearest-node "info")
+(declare-function eww-follow-link "eww")
+(declare-function org-open-at-point "org")
+(declare-function outline-invisible-p "outline")
+(defvar org-any-link-re)
 
 ;; ——— Macros ——————————————————————————————————————————————————————————————————
 (defmacro ali-flet (binding &rest body)
