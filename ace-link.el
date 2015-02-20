@@ -177,6 +177,9 @@
           (push (+ (match-beginning 0) 1) points)))
       (nreverse points))))
 
+(defvar eww-link-keymap)
+(defvar eww-mode-map)
+
 ;;;###autoload
 (defun ace-link-setup-default ()
   "Setup the defualt shortcuts."
