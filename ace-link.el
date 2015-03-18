@@ -107,6 +107,32 @@
     (forward-char 1)
     (eww-follow-link)))
 
+(defun ali--gnus-collect-references ()
+  "Collect the positions of visible links in the current gnus buffer."
+  (let (candidates pt)
+    (save-excursion
+      (save-restriction
+        (narrow-to-region
+         (window-start)
+         (window-end))
+        (goto-char (point-min))
+        (setq pt (point))
+        (while (progn (widget-forward 1)
+                      (> (point) pt))
+          (setq pt (point))
+          (when (plist-get (text-properties-at (point)) 'gnus-string)
+            (push (point) candidates)))
+        (nreverse candidates)))))
+
+;;;###autoload
+(defun ace-link-gnus ()
+  "Ace jump to links in `gnus-article-mode' buffers."
+  (interactive)
+  (ali-generic
+      (ali--gnus-collect-references)
+    (forward-char 1)
+    (widget-button-press (point))))
+
 ;;;###autoload
 (defun ace-link-org ()
   "Ace jump to links in `org-mode' buffers."
