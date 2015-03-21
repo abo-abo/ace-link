@@ -128,6 +128,8 @@
 (defun ace-link-gnus ()
   "Ace jump to links in `gnus-article-mode' buffers."
   (interactive)
+  (when (eq major-mode 'gnus-summary-mode)
+    (gnus-summary-widget-forward 1))
   (ali-generic
       (ali--gnus-collect-references)
     (forward-char 1)
