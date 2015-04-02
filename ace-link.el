@@ -107,8 +107,10 @@
     (forward-char 1)
     (eww-follow-link)))
 
+(declare-function 'widget-forward "wid-edit")
 (defun ali--gnus-collect-references ()
   "Collect the positions of visible links in the current gnus buffer."
+  (require 'wid-edit)
   (let (candidates pt)
     (save-excursion
       (save-restriction
@@ -123,6 +125,8 @@
           (when (plist-get (text-properties-at (point)) 'gnus-string)
             (push (point) candidates)))
         (nreverse candidates)))))
+
+(declare-function 'gnus-summary-widget-forward "gnus-sum")
 
 ;;;###autoload
 (defun ace-link-gnus ()
