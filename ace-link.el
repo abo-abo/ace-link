@@ -127,6 +127,7 @@
         (nreverse candidates)))))
 
 (declare-function 'gnus-summary-widget-forward "gnus-sum")
+(declare-function 'widget-button-press "wid-edit")
 
 ;;;###autoload
 (defun ace-link-gnus ()
