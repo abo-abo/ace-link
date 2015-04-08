@@ -72,8 +72,12 @@
            (list (lambda ()
                    (setq ace-jump-mode-end-hook)
                    ,@follower)))
-     (let ((ace-jump-mode-scope 'window))
-       (ace-jump-do ""))))
+     (condition-case err
+         (let ((ace-jump-mode-scope 'window))
+           (ace-jump-do ""))
+       (error
+        (setq ace-jump-mode-end-hook)
+        (signal (car err) (cdr err))))))
 
 ;; ——— Interactive —————————————————————————————————————————————————————————————
 ;;;###autoload
