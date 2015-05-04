@@ -5,7 +5,7 @@
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
 ;; Version: 0.3.0
-;; Package-Requires: ((ace-jump-mode "2.0"))
+;; Package-Requires: ((ace-window "0.8.0"))
 ;; Keywords: convenience, links
 
 ;; This file is not part of GNU Emacs
@@ -37,7 +37,8 @@
 
 ;;; Code:
 
-(require 'ace-jump-mode)
+(require 'avy)
+(require 'ace-window)
 (declare-function Info-next-reference "info")
 (declare-function Info-follow-nearest-node "info")
 (declare-function eww-follow-link "eww")
@@ -45,73 +46,46 @@
 (declare-function outline-invisible-p "outline")
 (defvar org-any-link-re)
 
-;; ——— Macros ——————————————————————————————————————————————————————————————————
-(defmacro ali-flet (binding &rest body)
-  "Temporarily override BINDING and execute BODY."
-  (declare (indent 1))
-  (let* ((name (car binding))
-         (old (cl-gensym (symbol-name name))))
-    `(let ((,old (symbol-function ',name)))
-       (unwind-protect
-            (progn
-              (fset ',name (lambda ,@(cdr binding)))
-              ,@body)
-         (fset ',name ,old)))))
-
-(defmacro ali-generic (candidates &rest follower)
-  "Ace jump to CANDIDATES using FOLLOWER."
-  (declare (indent 1))
-  `(ali-flet (ace-jump-search-candidate
-              (str va-list)
-              (mapcar (lambda (x)
-                        (make-aj-position
-                         :offset (1- x)
-                         :visual-area (car va-list)))
-                      ,candidates))
-     (setq ace-jump-mode-end-hook
-           (list (lambda ()
-                   (setq ace-jump-mode-end-hook)
-                   ,@follower)))
-     (condition-case err
-         (let ((ace-jump-mode-scope 'window))
-           (ace-jump-do ""))
-       (error
-        (setq ace-jump-mode-end-hook)
-        (signal (car err) (cdr err))))))
-
 ;; ——— Interactive —————————————————————————————————————————————————————————————
 ;;;###autoload
 (defun ace-link-info ()
   "Ace jump to links in `Info-mode' buffers."
   (interactive)
-  (ali-generic
-      (ali--info-collect-references)
-    (let ((end (window-end)))
-      (while (not (ignore-errors
-                    (Info-follow-nearest-node)))
-        (forward-char 1)
-        (when (> (point) end)
-          (error "Could not follow link"))))))
+  (let ((res (avi--process
+              (ali--info-collect-references)
+              #'avi--overlay-post)))
+    (when res
+      (goto-char res)
+      (let ((end (window-end)))
+        (while (not (ignore-errors
+                      (Info-follow-nearest-node)))
+          (forward-char 1)
+          (when (> (point) end)
+            (error "Could not follow link")))))))
 
 ;;;###autoload
 (defun ace-link-help ()
   "Ace jump to links in `help-mode' buffers."
   (interactive)
-  (ali-generic
-      (ali--help-collect-references)
-    (forward-char 1)
-    (push-button)))
+  (let ((res (avi--process
+              (ali--help-collect-references)
+              #'avi--overlay-post)))
+    (when res
+      (goto-char (1+ res))
+      (push-button))))
 
 ;;;###autoload
 (defun ace-link-eww ()
   "Ace jump to links in `eww-mode' buffers."
   (interactive)
-  (ali-generic
-      (ali--eww-collect-references)
-    (forward-char 1)
-    (eww-follow-link)))
+  (let ((res (avi--process
+              (ali--eww-collect-references)
+              #'avi--overlay-post)))
+    (when res
+      (goto-char (1+ res))
+      (eww-follow-link))))
 
-(declare-function 'widget-forward "wid-edit")
+(declare-function widget-forward "wid-edit")
 (defun ali--gnus-collect-references ()
   "Collect the positions of visible links in the current gnus buffer."
   (require 'wid-edit)
@@ -130,8 +104,8 @@
             (push (point) candidates)))
         (nreverse candidates)))))
 
-(declare-function 'gnus-summary-widget-forward "gnus-sum")
-(declare-function 'widget-button-press "wid-edit")
+(declare-function gnus-summary-widget-forward "gnus-sum")
+(declare-function widget-button-press "wid-edit")
 
 ;;;###autoload
 (defun ace-link-gnus ()
@@ -139,19 +113,22 @@
   (interactive)
   (when (eq major-mode 'gnus-summary-mode)
     (gnus-summary-widget-forward 1))
-  (ali-generic
-      (ali--gnus-collect-references)
-    (forward-char 1)
-    (widget-button-press (point))))
-
+  (let ((res (avi--process
+              (ali--gnus-collect-references)
+              #'avi--overlay-post)))
+    (when res
+      (goto-char (1+ res))
+      (widget-button-press (point)))))
 ;;;###autoload
 (defun ace-link-org ()
   "Ace jump to links in `org-mode' buffers."
   (interactive)
-  (ali-generic
-      (ali--org-collect-references)
-    (org-open-at-point)))
-
+  (let ((res (avi--process
+              (ali--org-collect-references)
+              #'avi--overlay-pre)))
+    (when res
+      (goto-char res)
+      (org-open-at-point))))
 ;; ——— Utility —————————————————————————————————————————————————————————————————
 (defun ali--info-collect-references ()
   "Collect the positions of visible links in the current `Info-mode' buffer."
@@ -211,7 +188,7 @@
         ;; position in the link ("...X]]") to cover links with and
         ;; without a description.
         (when (not (outline-invisible-p (- (match-end 0) 3)))
-          (push (+ (match-beginning 0) 1) points)))
+          (push (match-beginning 0) points)))
       (nreverse points))))
 
 (defvar eww-link-keymap)
