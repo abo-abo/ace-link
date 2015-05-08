@@ -5,7 +5,7 @@
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
 ;; Version: 0.3.0
-;; Package-Requires: ((ace-window "0.8.0"))
+;; Package-Requires: ((avy "0.1.0"))
 ;; Keywords: convenience, links
 
 ;; This file is not part of GNU Emacs
@@ -36,55 +36,86 @@
 ;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode'.
 
 ;;; Code:
-
 (require 'avy)
-(require 'ace-window)
-(declare-function Info-next-reference "info")
-(declare-function Info-follow-nearest-node "info")
-(declare-function eww-follow-link "eww")
-(declare-function org-open-at-point "org")
-(declare-function outline-invisible-p "outline")
-(defvar org-any-link-re)
 
-;; ——— Interactive —————————————————————————————————————————————————————————————
+;;* Commands
+;;** Info
+(declare-function Info-follow-nearest-node "info")
+
 ;;;###autoload
 (defun ace-link-info ()
-  "Ace jump to links in `Info-mode' buffers."
+  "Open a visible link in an `Info-mode' buffer."
   (interactive)
-  (let ((res (avi--process
+  (let ((res (avy--process
               (ali--info-collect-references)
-              #'avi--overlay-post)))
+              #'avy--overlay-post)))
     (when res
       (goto-char res)
-      (let ((end (window-end)))
+      (let ((we (window-end)))
         (while (not (ignore-errors
                       (Info-follow-nearest-node)))
           (forward-char 1)
-          (when (> (point) end)
+          (when (> (point) we)
             (error "Could not follow link")))))))
 
+;;** Help
 ;;;###autoload
 (defun ace-link-help ()
-  "Ace jump to links in `help-mode' buffers."
+  "Open a visible link in a `help-mode' buffer."
   (interactive)
-  (let ((res (avi--process
+  (let ((res (avy--process
               (ali--help-collect-references)
-              #'avi--overlay-post)))
+              #'avy--overlay-post)))
     (when res
       (goto-char (1+ res))
       (push-button))))
 
+;;** EWW
+(declare-function eww-follow-link "eww")
+
 ;;;###autoload
 (defun ace-link-eww ()
-  "Ace jump to links in `eww-mode' buffers."
+  "Open a visible link in an `eww-mode' buffer."
   (interactive)
-  (let ((res (avi--process
+  (let ((res (avy--process
               (ali--eww-collect-references)
-              #'avi--overlay-post)))
+              #'avy--overlay-post)))
     (when res
       (goto-char (1+ res))
       (eww-follow-link))))
 
+;;** GNUS
+(declare-function gnus-summary-widget-forward "gnus-sum")
+(declare-function widget-button-press "wid-edit")
+
+;;;###autoload
+(defun ace-link-gnus ()
+  "Ace jump to links in `gnus-article-mode' buffers."
+  (interactive)
+  (when (eq major-mode 'gnus-summary-mode)
+    (gnus-summary-widget-forward 1))
+  (let ((res (avy--process
+              (ali--gnus-collect-references)
+              #'avy--overlay-post)))
+    (when res
+      (goto-char (1+ res))
+      (widget-button-press (point)))))
+
+;;** Org
+(declare-function org-open-at-point "org")
+
+;;;###autoload
+(defun ace-link-org ()
+  "Ace jump to links in `org-mode' buffers."
+  (interactive)
+  (let ((res (avy--process
+              (ali--org-collect-references)
+              #'avy--overlay-pre)))
+    (when res
+      (goto-char res)
+      (org-open-at-point))))
+
+;;* Internals
 (declare-function widget-forward "wid-edit")
 (defun ali--gnus-collect-references ()
   "Collect the positions of visible links in the current gnus buffer."
@@ -104,32 +135,7 @@
             (push (point) candidates)))
         (nreverse candidates)))))
 
-(declare-function gnus-summary-widget-forward "gnus-sum")
-(declare-function widget-button-press "wid-edit")
-
-;;;###autoload
-(defun ace-link-gnus ()
-  "Ace jump to links in `gnus-article-mode' buffers."
-  (interactive)
-  (when (eq major-mode 'gnus-summary-mode)
-    (gnus-summary-widget-forward 1))
-  (let ((res (avi--process
-              (ali--gnus-collect-references)
-              #'avi--overlay-post)))
-    (when res
-      (goto-char (1+ res))
-      (widget-button-press (point)))))
-;;;###autoload
-(defun ace-link-org ()
-  "Ace jump to links in `org-mode' buffers."
-  (interactive)
-  (let ((res (avi--process
-              (ali--org-collect-references)
-              #'avi--overlay-pre)))
-    (when res
-      (goto-char res)
-      (org-open-at-point))))
-;; ——— Utility —————————————————————————————————————————————————————————————————
+(declare-function Info-next-reference "info")
 (defun ali--info-collect-references ()
   "Collect the positions of visible links in the current `Info-mode' buffer."
   (let ((end (window-end))
@@ -178,6 +184,8 @@
                                         'help-echo nil)))
         (nreverse candidates)))))
 
+(declare-function outline-invisible-p "outline")
+(defvar org-any-link-re)
 (defun ali--org-collect-references ()
   (let ((end (window-end))
         points)
@@ -191,6 +199,7 @@
           (push (match-beginning 0) points)))
       (nreverse points))))
 
+;;* Bindings
 (defvar eww-link-keymap)
 (defvar eww-mode-map)
 
