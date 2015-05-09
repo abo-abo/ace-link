@@ -204,16 +204,17 @@
 (defvar eww-mode-map)
 
 ;;;###autoload
-(defun ace-link-setup-default ()
-  "Setup the defualt shortcuts."
+(defun ace-link-setup-default (&optional key)
+  "Bind KEY to appropriate functions in appropriate keymaps."
+  (setq key (or key "o"))
   (eval-after-load "info"
-    '(define-key Info-mode-map "o" 'ace-link-info))
+    `(define-key Info-mode-map ,key 'ace-link-info))
   (eval-after-load "help-mode"
-    '(define-key help-mode-map "o" 'ace-link-help))
+    `(define-key help-mode-map ,key 'ace-link-help))
   (eval-after-load "eww"
-    '(progn
-      (define-key eww-link-keymap "o" 'ace-link-eww)
-      (define-key eww-mode-map "o" 'ace-link-eww))))
+    `(progn
+      (define-key eww-link-keymap ,key 'ace-link-eww)
+      (define-key eww-mode-map ,key 'ace-link-eww))))
 
 (provide 'ace-link)
 
