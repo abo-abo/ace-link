@@ -46,9 +46,10 @@
 (defun ace-link-info ()
   "Open a visible link in an `Info-mode' buffer."
   (interactive)
-  (let ((res (avy--process
-              (ali--info-collect-references)
-              #'avy--overlay-post)))
+  (let ((res (avy--with-avy-keys ace-link-info
+               (avy--process
+                (ali--info-collect-references)
+                #'avy--overlay-post))))
     (when res
       (goto-char res)
       (let ((we (window-end)))
@@ -63,9 +64,10 @@
 (defun ace-link-help ()
   "Open a visible link in a `help-mode' buffer."
   (interactive)
-  (let ((res (avy--process
-              (ali--help-collect-references)
-              #'avy--overlay-post)))
+  (let ((res (avy--with-avy-keys ace-link-help
+               (avy--process
+                (ali--help-collect-references)
+                #'avy--overlay-post))))
     (when res
       (goto-char (1+ res))
       (push-button))))
@@ -77,9 +79,10 @@
 (defun ace-link-eww ()
   "Open a visible link in an `eww-mode' buffer."
   (interactive)
-  (let ((res (avy--process
-              (ali--eww-collect-references)
-              #'avy--overlay-post)))
+  (let ((res (avy--with-avy-keys ace-link-eww
+               (avy--process
+                (ali--eww-collect-references)
+                #'avy--overlay-post))))
     (when res
       (goto-char (1+ res))
       (eww-follow-link))))
@@ -94,9 +97,10 @@
   (interactive)
   (when (eq major-mode 'gnus-summary-mode)
     (gnus-summary-widget-forward 1))
-  (let ((res (avy--process
-              (ali--gnus-collect-references)
-              #'avy--overlay-post)))
+  (let ((res (avy--with-avy-keys ace-link-gnus
+               (avy--process
+                (ali--gnus-collect-references)
+                #'avy--overlay-post))))
     (when res
       (goto-char (1+ res))
       (widget-button-press (point)))))
@@ -108,9 +112,10 @@
 (defun ace-link-org ()
   "Ace jump to links in `org-mode' buffers."
   (interactive)
-  (let ((res (avy--process
-              (ali--org-collect-references)
-              #'avy--overlay-pre)))
+  (let ((res (avy--with-avy-keys ace-link-org
+               (avy--process
+                (ali--org-collect-references)
+                #'avy--overlay-pre))))
     (when res
       (goto-char res)
       (org-open-at-point))))
