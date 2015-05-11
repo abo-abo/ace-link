@@ -5,7 +5,7 @@
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
 ;; Version: 0.3.0
-;; Package-Requires: ((avy "0.1.0"))
+;; Package-Requires: ((avy "0.2.0"))
 ;; Keywords: convenience, links
 
 ;; This file is not part of GNU Emacs
@@ -37,7 +37,6 @@
 
 ;;; Code:
 (require 'avy)
-(require 'avy-jump nil t)
 
 ;;* Commands
 ;;** Info
