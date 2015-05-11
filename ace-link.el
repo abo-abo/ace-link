@@ -1,6 +1,6 @@
-;;; ace-link.el --- Quickly follow links using `ace-jump-mode'
+;;; ace-link.el --- Quickly follow links
 
-;; Copyright (C) 2014 Oleh Krehel
+;; Copyright (C) 2014-2015 Oleh Krehel
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
@@ -26,14 +26,15 @@
 ;;; Commentary:
 ;;
 ;; This package offers an alternative to tabbing through links in
-;; buffers, for instance, in an Info buffer.  `ace-jump-mode' is used
-;; to turn opening a link from an O(N) operation into an O(1).
+;; buffers, for instance, in an Info buffer.  `avy' is used to turn
+;; opening a link from an O(N) operation into an O(1).
 ;;
 ;; Use `ace-link-setup-default' to set up the default bindings, which currently
 ;; bind e.g. `ace-link-info' to "o", which was previously unbound and is
 ;; close to "l" (which by default goes back).
 ;;
-;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode'.
+;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode',
+;; `gnus-article-mode', `Custom-mode'.
 
 ;;; Code:
 (require 'avy)
@@ -93,7 +94,7 @@
 
 ;;;###autoload
 (defun ace-link-gnus ()
-  "Ace jump to links in `gnus-article-mode' buffers."
+  "Open a visible link in a `gnus-article-mode' buffer."
   (interactive)
   (when (eq major-mode 'gnus-summary-mode)
     (gnus-summary-widget-forward 1))
@@ -110,7 +111,7 @@
 
 ;;;###autoload
 (defun ace-link-org ()
-  "Ace jump to links in `org-mode' buffers."
+  "Open a visible link in an `org-mode' buffer."
   (interactive)
   (let ((res (avy--with-avy-keys ace-link-org
                (avy--process
@@ -119,6 +120,18 @@
     (when res
       (goto-char res)
       (org-open-at-point))))
+
+;;;###autoload
+(defun ace-link-custom ()
+  "Open a visible link in an `Custom-mode' buffer."
+  (interactive)
+  (let ((res (avy--with-avy-keys ace-link-custom
+               (avy--process
+                (ali--custom-collect-references)
+                #'avy--overlay-pre))))
+    (when res
+      (goto-char res)
+      (Custom-newline (point)))))
 
 ;;* Internals
 (declare-function widget-forward "wid-edit")
@@ -139,6 +152,23 @@
           (when (plist-get (text-properties-at (point)) 'gnus-string)
             (push (point) candidates)))
         (nreverse candidates)))))
+
+(defun ali--custom-collect-references ()
+  "Collect the positions of visible links in the current `Custom-mode' buffer."
+  (let (candidates pt)
+    (save-excursion
+      (save-restriction
+        (narrow-to-region
+         (window-start)
+         (window-end))
+        (goto-char (point-min))
+        (setq pt (point))
+        (while (progn (widget-forward 1)
+                      (> (point) pt))
+          (setq pt (point))
+          (when (get-char-property (point) 'button)
+            (push (point) candidates)))))
+    (nreverse candidates)))
 
 (declare-function Info-next-reference "info")
 (defun ali--info-collect-references ()
@@ -207,6 +237,7 @@
 ;;* Bindings
 (defvar eww-link-keymap)
 (defvar eww-mode-map)
+(defvar custom-mode-map)
 
 ;;;###autoload
 (defun ace-link-setup-default (&optional key)
@@ -218,8 +249,11 @@
     `(define-key help-mode-map ,key 'ace-link-help))
   (eval-after-load "eww"
     `(progn
-      (define-key eww-link-keymap ,key 'ace-link-eww)
-      (define-key eww-mode-map ,key 'ace-link-eww))))
+       (define-key eww-link-keymap ,key 'ace-link-eww)
+       (define-key eww-mode-map ,key 'ace-link-eww)))
+  (eval-after-load 'cus-edit
+    `(progn
+       (define-key custom-mode-map ,key 'ace-link-custom))))
 
 (provide 'ace-link)
 
