@@ -36,7 +36,8 @@
 ;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode'.
 
 ;;; Code:
-(require 'avy-jump)
+(require 'avy)
+(require 'avy-jump nil t)
 
 ;;* Commands
 ;;** Info
