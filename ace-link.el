@@ -88,6 +88,18 @@
       (goto-char (1+ res))
       (eww-follow-link))))
 
+;;;###autoload
+(defun ace-link-compilation ()
+  "Open a visible link in an `compilation-mode' buffer."
+  (interactive)
+  (let ((res (avy--with-avy-keys ace-link-compilation
+               (avy--process
+                (ali--eww-collect-references)
+                #'avy--overlay-post))))
+    (when res
+      (goto-char (1+ res))
+      (compile-goto-error))))
+
 ;;** GNUS
 (declare-function gnus-summary-widget-forward "gnus-sum")
 (declare-function widget-button-press "wid-edit")
@@ -245,6 +257,8 @@
   (setq key (or key "o"))
   (eval-after-load "info"
     `(define-key Info-mode-map ,key 'ace-link-info))
+  (eval-after-load "compile"
+    `(define-key compilation-mode-map ,key 'ace-link-compilation))
   (eval-after-load "help-mode"
     `(define-key help-mode-map ,key 'ace-link-help))
   (eval-after-load "eww"
