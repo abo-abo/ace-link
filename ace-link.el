@@ -52,6 +52,7 @@
                 (ali--info-collect-references)
                 #'avy--overlay-post))))
     (when res
+      (push-mark)
       (goto-char res)
       (let ((we (window-end)))
         (while (not (ignore-errors
