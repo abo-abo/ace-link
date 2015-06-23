@@ -126,6 +126,7 @@
 (defun ace-link-org ()
   "Open a visible link in an `org-mode' buffer."
   (interactive)
+  (require 'org)
   (let ((res (avy--with-avy-keys ace-link-org
                (avy--process
                 (ali--org-collect-references)
