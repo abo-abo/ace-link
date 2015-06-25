@@ -135,6 +135,8 @@
       (goto-char res)
       (org-open-at-point))))
 
+(declare-function Custom-newline "cus-edit")
+
 ;;;###autoload
 (defun ace-link-custom ()
   "Open a visible link in an `Custom-mode' buffer."
