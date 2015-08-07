@@ -34,7 +34,7 @@
 ;; close to "l" (which by default goes back).
 ;;
 ;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode',
-;; `gnus-article-mode', `Custom-mode'.
+;; `gnus-article-mode', `Custom-mode', `woman-mode'.
 
 ;;; Code:
 (require 'avy)
@@ -71,6 +71,19 @@
                 (ali--help-collect-references)
                 #'avy--overlay-post))))
     (when res
+      (goto-char (1+ res))
+      (push-button))))
+
+;;** WoMan
+;;;###autoload
+(defun ace-link-woman ()
+  "Open a visible link in a `woman-mode' buffer."
+  (interactive)
+  (let ((res (avy-with ace-link-woman
+               (avy--process
+                (ali--woman-collect-references)
+                #'avy--overlay-post))))
+    (when (number-or-marker-p res)
       (goto-char (1+ res))
       (push-button))))
 
@@ -216,6 +229,17 @@
                                       'button nil))))
     (nreverse candidates)))
 
+(defun ali--woman-collect-references ()
+  "Collect all links visible in the current `woman-mode' buffer."
+  (let ((candidates)
+        (end (window-end)))
+    (save-excursion
+      (goto-char (window-start))
+      (while (and (condition-case nil (forward-button 1)
+               (error nil)) (< (point) end))
+        (push (point) candidates))
+      (nreverse candidates))))
+
 (defun ali--eww-collect-references ()
   "Collect the positions of visible links in the current `eww' buffer."
   (save-excursion
@@ -265,6 +289,8 @@
     `(define-key compilation-mode-map ,key 'ace-link-compilation))
   (eval-after-load "help-mode"
     `(define-key help-mode-map ,key 'ace-link-help))
+  (eval-after-load "woman-mode"
+    `(define-key woman-mode-map ,key 'ace-link-woman))
   (eval-after-load "eww"
     `(progn
        (define-key eww-link-keymap ,key 'ace-link-eww)
