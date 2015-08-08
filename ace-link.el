@@ -289,7 +289,7 @@
     `(define-key compilation-mode-map ,key 'ace-link-compilation))
   (eval-after-load "help-mode"
     `(define-key help-mode-map ,key 'ace-link-help))
-  (eval-after-load "woman-mode"
+  (eval-after-load "woman"
     `(define-key woman-mode-map ,key 'ace-link-woman))
   (eval-after-load "eww"
     `(progn
