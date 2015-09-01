@@ -178,7 +178,8 @@
         (while (progn (widget-forward 1)
                       (> (point) pt))
           (setq pt (point))
-          (when (plist-get (text-properties-at (point)) 'gnus-string)
+          (when (or (plist-get (text-properties-at (point)) 'gnus-string)
+                    (plist-get (text-properties-at (point)) 'shr-url))
             (push (point) candidates)))
         (nreverse candidates)))))
 
