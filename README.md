@@ -4,7 +4,7 @@
 
 ## What and why
 
-Currently, to jump to a link in an `Info-mode` or `help-mode` or `woman-mode` or `org-mode` or `eww-mode` or `compilation-mode` buffer, you can tab through the links to select the one you want.  This is an O(N) operation, where the N is the amount of links.  This package turns this into an O(1) operation, or at least O(log(N)) if you manage to squeeze thousands of links in one screen.  It does so by assigning a letter to each link using [avy](https://github.com/abo-abo/avy).
+Currently, to jump to a link in an `Info-mode` or `help-mode` or `woman-mode` or `org-mode` or `eww-mode` or `compilation-mode` or `goto-address-mode` buffer, you can tab through the links to select the one you want.  This is an O(N) operation, where the N is the amount of links.  This package turns this into an O(1) operation, or at least O(log(N)) if you manage to squeeze thousands of links in one screen.  It does so by assigning a letter to each link using [avy](https://github.com/abo-abo/avy).
 
 ## Install
 Either clone from here or install from [MELPA](http://melpa.milkbox.net/) (recommended).
@@ -40,6 +40,10 @@ If you use `ert`, `ace-link-help` also works on `ert` results:
 
     (require 'ert)
     (define-key ert-results-mode-map "o" 'ace-link-help)
+
+To bind 'ace-link-addr' in all modes (useful when using `goto-address-mode` or `goto-address-prog-mode`):
+
+    (define-key global-mode-map (kbd "M-o" 'ace-link-addr'))
 
 ## Usage
 

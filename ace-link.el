@@ -34,7 +34,7 @@
 ;; close to "l" (which by default goes back).
 ;;
 ;; Supported modes: `Info-mode', `help-mode', `org-mode', `eww-mode',
-;; `gnus-article-mode', `Custom-mode', `woman-mode'.
+;; `gnus-article-mode', `Custom-mode', `woman-mode', `goto-address-mode'.
 
 ;;; Code:
 (require 'avy)
@@ -162,6 +162,18 @@
       (goto-char res)
       (Custom-newline (point)))))
 
+;;;###autoload
+(defun ace-link-addr ()
+  "Open a visible link in a goto-address buffer."
+  (interactive)
+  (let ((res (avy-with ace-link-addr
+               (avy--process
+                (ali--addr-collect-references)
+                #'avy--overlay-pre))))
+    (when (number-or-marker-p res)
+      (goto-char (1+ res))
+      (goto-address-at-point))))
+
 ;;* Internals
 (declare-function widget-forward "wid-edit")
 (defun ali--gnus-collect-references ()
@@ -274,6 +286,13 @@
         (when (not (outline-invisible-p (- (match-end 0) 3)))
           (push (match-beginning 0) points)))
       (nreverse points))))
+
+(defun ali--addr-collect-references ()
+  (let (candidates)
+    (dolist (overlay (overlays-in (window-start) (window-end)))
+      (if (overlay-get overlay 'goto-address)
+          (push (overlay-start overlay) candidates)))
+    (nreverse candidates)))
 
 ;;* Bindings
 (defvar eww-link-keymap)
