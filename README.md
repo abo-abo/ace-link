@@ -43,7 +43,7 @@ If you use `ert`, `ace-link-help` also works on `ert` results:
 
 To bind 'ace-link-addr' in all modes (useful when using `goto-address-mode` or `goto-address-prog-mode`):
 
-    (define-key global-mode-map (kbd "M-o" 'ace-link-addr'))
+    (global-set-key (kbd "M-o") 'ace-link-addr)
 
 ## Usage
 
