@@ -41,25 +41,54 @@
 
 ;;* Commands
 ;;** Info
-(declare-function Info-follow-nearest-node "info")
-
 ;;;###autoload
 (defun ace-link-info ()
   "Open a visible link in an `Info-mode' buffer."
   (interactive)
-  (let ((res (avy-with ace-link-info
+  (let ((pt (avy-with ace-link-info
                (avy--process
-                (ali--info-collect-references)
+                (mapcar #'cdr
+                        (ace-link--info-collect))
                 #'avy--overlay-post))))
-    (when res
-      (push-mark)
-      (goto-char res)
-      (let ((we (window-end)))
-        (while (not (ignore-errors
-                      (Info-follow-nearest-node)))
-          (forward-char 1)
-          (when (> (point) we)
-            (error "Could not follow link")))))))
+    (ace-link--info-action pt)))
+
+(defun ace-link--info-action (pt)
+  (when (numberp pt)
+    (push-mark)
+    (goto-char pt)
+    (let ((we (window-end)))
+      (while (not (ignore-errors
+                    (Info-follow-nearest-node)))
+        (forward-char 1)
+        (when (> (point) we)
+          (error "Could not follow link"))))))
+
+(declare-function Info-follow-nearest-node "info")
+(declare-function Info-next-reference "info")
+(declare-function Info-try-follow-nearest-node "info")
+(declare-function Info-goto-node "info")
+
+(defun ace-link--info-current ()
+  "Return the node at point."
+  (cons (cl-letf (((symbol-function #'Info-goto-node)
+                   (lambda (node _) node)))
+          (Info-try-follow-nearest-node))
+        (point)))
+
+(defun ace-link--info-collect ()
+  "Collect the positions of visible links in the current `Info-mode' buffer."
+  (let ((end (window-end))
+        points)
+    (save-excursion
+      (goto-char (window-start))
+      (when (ignore-errors (Info-next-reference) t)
+        (push (ace-link--info-current) points)
+        (Info-next-reference)
+        (while (and (< (point) end)
+                    (> (point) (cdar points)))
+          (push (ace-link--info-current) points)
+          (Info-next-reference))
+        (nreverse points)))))
 
 ;;** Help
 ;;;###autoload
@@ -211,22 +240,6 @@
           (when (get-char-property (point) 'button)
             (push (point) candidates)))))
     (nreverse candidates)))
-
-(declare-function Info-next-reference "info")
-(defun ali--info-collect-references ()
-  "Collect the positions of visible links in the current `Info-mode' buffer."
-  (let ((end (window-end))
-        points)
-    (save-excursion
-      (goto-char (window-start))
-      (when (ignore-errors (Info-next-reference) t)
-        (push (point) points)
-        (Info-next-reference)
-        (while (and (< (point) end)
-                    (> (point) (car points)))
-          (push (point) points)
-          (Info-next-reference))
-        (nreverse points)))))
 
 (defun ali--help-collect-references ()
   "Collect the positions of visible links in the current `help-mode' buffer."
