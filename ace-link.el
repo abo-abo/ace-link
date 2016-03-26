@@ -39,6 +39,31 @@
 ;;; Code:
 (require 'avy)
 
+;;* `ace-link'
+;;;###autoload
+(defun ace-link ()
+  "Call the ace link function for the current `major-mode'"
+  (interactive)
+  (cl-case major-mode
+    (Info-mode
+     (ace-link-info))
+    (help-mode
+     (ace-link-help))
+    (woman-mode
+     (ace-link-woman))
+    (eww-mode
+     (ace-link-eww))
+    (compilation-mode
+     (ace-link-compilation))
+    (gnus-mode
+     (ace-link-gnus))
+    (org-mode
+     (ace-link-org))
+    (Custom-mode
+     (ace-link-org))
+    (t
+     (error "%S isn't supported" major-mode))))
+
 ;;* `ace-link-info'
 ;;;###autoload
 (defun ace-link-info ()
