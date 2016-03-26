@@ -192,13 +192,16 @@
 (defun ace-link-compilation ()
   "Open a visible link in a `compilation-mode' buffer."
   (interactive)
-  (let ((res (avy-with ace-link-compilation
-               (avy--process
-                (mapcar #'cdr (ace-link--eww-collect))
-                #'avy--overlay-post))))
-    (when res
-      (goto-char (1+ res))
-      (compile-goto-error))))
+  (let ((pt (avy-with ace-link-compilation
+              (avy--process
+               (mapcar #'cdr (ace-link--eww-collect))
+               #'avy--overlay-post))))
+    (ace-link--compilation-action pt)))
+
+(defun ace-link--compilation-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (compile-goto-error)))
 
 (declare-function compile-goto-error "compile")
 
