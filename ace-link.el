@@ -325,15 +325,18 @@
 (defun ace-link-addr ()
   "Open a visible link in a goto-address buffer."
   (interactive)
-  (let ((res (avy-with ace-link-addr
+  (let ((pt (avy-with ace-link-addr
                (avy--process
-                (ali--addr-collect-references)
+                (ace-link--addr-collect)
                 #'avy--overlay-pre))))
-    (when (number-or-marker-p res)
-      (goto-char (1+ res))
-      (goto-address-at-point))))
+    (ace-link--addr-action pt)))
 
-(defun ali--addr-collect-references ()
+(defun ace-link--addr-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (goto-address-at-point)))
+
+(defun ace-link--addr-collect ()
   (let (candidates)
     (dolist (overlay (overlays-in (window-start) (window-end)))
       (if (overlay-get overlay 'goto-address)
