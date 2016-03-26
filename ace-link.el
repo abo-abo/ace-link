@@ -39,8 +39,7 @@
 ;;; Code:
 (require 'avy)
 
-;;* Commands
-;;** Info
+;;* `ace-link-info'
 ;;;###autoload
 (defun ace-link-info ()
   "Open a visible link in an `Info-mode' buffer."
@@ -90,7 +89,7 @@
           (Info-next-reference))
         (nreverse points)))))
 
-;;** Help
+;;* `ace-link-help'
 ;;;###autoload
 (defun ace-link-help ()
   "Open a visible link in a `help-mode' buffer."
@@ -120,7 +119,7 @@
                                       'button nil))))
     (nreverse candidates)))
 
-;;** WoMan
+;;* `ace-link-woman'
 ;;;###autoload
 (defun ace-link-woman ()
   "Open a visible link in a `woman-mode' buffer."
@@ -149,7 +148,7 @@
               candidates))
       (nreverse candidates))))
 
-;;** EWW
+;;* `ace-link-eww'
 ;;;###autoload
 (defun ace-link-eww ()
   "Open a visible link in an `eww-mode' buffer."
@@ -187,7 +186,7 @@
                 candidates))
         (nreverse candidates)))))
 
-;;** Compilation
+;;* `ace-link-compilation'
 ;;;###autoload
 (defun ace-link-compilation ()
   "Open a visible link in a `compilation-mode' buffer."
@@ -205,25 +204,48 @@
 
 (declare-function compile-goto-error "compile")
 
-;;** GNUS
-(declare-function gnus-summary-widget-forward "gnus-sum")
-(declare-function widget-button-press "wid-edit")
-
+;;* `ace-link-gnus'
 ;;;###autoload
 (defun ace-link-gnus ()
   "Open a visible link in a `gnus-article-mode' buffer."
   (interactive)
   (when (eq major-mode 'gnus-summary-mode)
     (gnus-summary-widget-forward 1))
-  (let ((res (avy-with ace-link-gnus
-               (avy--process
-                (ali--gnus-collect-references)
-                #'avy--overlay-post))))
-    (when res
-      (goto-char (1+ res))
-      (widget-button-press (point)))))
+  (let ((pt (avy-with ace-link-gnus
+              (avy--process
+               (ace-link--gnus-collect)
+               #'avy--overlay-post))))
+    (ace-link--gnus-action pt)))
 
-;;** Org
+(defun ace-link--gnus-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (widget-button-press (point))))
+
+(declare-function widget-forward "wid-edit")
+(declare-function gnus-summary-widget-forward "gnus-sum")
+(declare-function widget-button-press "wid-edit")
+
+(defun ace-link--gnus-collect ()
+  "Collect the positions of visible links in the current gnus buffer."
+  (require 'wid-edit)
+  (let (candidates pt)
+    (save-excursion
+      (save-restriction
+        (narrow-to-region
+         (window-start)
+         (window-end))
+        (goto-char (point-min))
+        (setq pt (point))
+        (while (progn (widget-forward 1)
+                      (> (point) pt))
+          (setq pt (point))
+          (when (or (plist-get (text-properties-at (point)) 'gnus-string)
+                    (plist-get (text-properties-at (point)) 'shr-url))
+            (push (point) candidates)))
+        (nreverse candidates)))))
+
+;;* `ace-link-org'
 (declare-function org-open-at-point "org")
 
 ;;;###autoload
@@ -266,26 +288,6 @@
       (goto-address-at-point))))
 
 ;;* Internals
-(declare-function widget-forward "wid-edit")
-(defun ali--gnus-collect-references ()
-  "Collect the positions of visible links in the current gnus buffer."
-  (require 'wid-edit)
-  (let (candidates pt)
-    (save-excursion
-      (save-restriction
-        (narrow-to-region
-         (window-start)
-         (window-end))
-        (goto-char (point-min))
-        (setq pt (point))
-        (while (progn (widget-forward 1)
-                      (> (point) pt))
-          (setq pt (point))
-          (when (or (plist-get (text-properties-at (point)) 'gnus-string)
-                    (plist-get (text-properties-at (point)) 'shr-url))
-            (push (point) candidates)))
-        (nreverse candidates)))))
-
 (defun ali--custom-collect-references ()
   "Collect the positions of visible links in the current `Custom-mode' buffer."
   (let (candidates pt)
