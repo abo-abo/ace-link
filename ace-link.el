@@ -290,31 +290,20 @@
 (defun ace-link-custom ()
   "Open a visible link in an `Custom-mode' buffer."
   (interactive)
-  (let ((res (avy-with ace-link-custom
-               (avy--process
-                (ali--custom-collect-references)
-                #'avy--overlay-pre))))
-    (when res
-      (goto-char res)
-      (Custom-newline (point)))))
+  (let ((pt (avy-with ace-link-custom
+              (avy--process
+               (ace-link--custom-collect)
+               #'avy--overlay-pre))))
+    (ace-link--custom-action pt)))
 
 (declare-function Custom-newline "cus-edit")
 
-;;* `ace-link-addr'
-;;;###autoload
-(defun ace-link-addr ()
-  "Open a visible link in a goto-address buffer."
-  (interactive)
-  (let ((res (avy-with ace-link-addr
-               (avy--process
-                (ali--addr-collect-references)
-                #'avy--overlay-pre))))
-    (when (number-or-marker-p res)
-      (goto-char (1+ res))
-      (goto-address-at-point))))
+(defun ace-link--custom-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (Custom-newline (point))))
 
-;;* Internals
-(defun ali--custom-collect-references ()
+(defun ace-link--custom-collect ()
   "Collect the positions of visible links in the current `Custom-mode' buffer."
   (let (candidates pt)
     (save-excursion
@@ -330,6 +319,19 @@
           (when (get-char-property (point) 'button)
             (push (point) candidates)))))
     (nreverse candidates)))
+
+;;* `ace-link-addr'
+;;;###autoload
+(defun ace-link-addr ()
+  "Open a visible link in a goto-address buffer."
+  (interactive)
+  (let ((res (avy-with ace-link-addr
+               (avy--process
+                (ali--addr-collect-references)
+                #'avy--overlay-pre))))
+    (when (number-or-marker-p res)
+      (goto-char (1+ res))
+      (goto-address-at-point))))
 
 (defun ali--addr-collect-references ()
   (let (candidates)
