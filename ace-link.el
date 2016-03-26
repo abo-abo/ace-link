@@ -95,13 +95,30 @@
 (defun ace-link-help ()
   "Open a visible link in a `help-mode' buffer."
   (interactive)
-  (let ((res (avy-with ace-link-help
-               (avy--process
-                (ali--help-collect-references)
-                #'avy--overlay-post))))
-    (when res
-      (goto-char (1+ res))
-      (push-button))))
+  (let ((pt (avy-with ace-link-help
+              (avy--process
+               (mapcar #'cdr (ace-link--help-collect))
+               #'avy--overlay-post))))
+    (ace-link--help-action pt)))
+
+(defun ace-link--help-action (pt)
+  (when (numberp pt)
+    (goto-char (1+ pt))
+    (push-button)))
+
+(defun ace-link--help-collect ()
+  "Collect the positions of visible links in the current `help-mode' buffer."
+  (let ((skip (text-property-any
+               (point-min) (point-max) 'button nil))
+        candidates)
+    (save-excursion
+      (while (setq skip (text-property-not-all
+                         skip (point-max) 'button nil))
+        (goto-char skip)
+        (push (cons (button-label (button-at skip)) skip) candidates)
+        (setq skip (text-property-any (point) (point-max)
+                                      'button nil))))
+    (nreverse candidates)))
 
 ;;** WoMan
 ;;;###autoload
@@ -239,20 +256,6 @@
           (setq pt (point))
           (when (get-char-property (point) 'button)
             (push (point) candidates)))))
-    (nreverse candidates)))
-
-(defun ali--help-collect-references ()
-  "Collect the positions of visible links in the current `help-mode' buffer."
-  (let ((skip (text-property-any (point-min) (point-max)
-                                 'button nil))
-        candidates)
-    (save-excursion
-      (while (setq skip (text-property-not-all skip (point-max)
-                                               'button nil))
-        (goto-char skip)
-        (push skip candidates)
-        (setq skip (text-property-any (point) (point-max)
-                                      'button nil))))
     (nreverse candidates)))
 
 (defun ali--woman-collect-references ()
