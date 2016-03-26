@@ -125,17 +125,31 @@
 (defun ace-link-woman ()
   "Open a visible link in a `woman-mode' buffer."
   (interactive)
-  (let ((res (avy-with ace-link-woman
-               (avy--process
-                (ali--woman-collect-references)
-                #'avy--overlay-post))))
-    (when (number-or-marker-p res)
-      (goto-char (1+ res))
-      (push-button))))
+  (let ((pt (avy-with ace-link-woman
+              (avy--process
+               (mapcar #'cdr (ace-link--woman-collect))
+               #'avy--overlay-post))))
+    (ace-link--woman-action pt)))
+
+(defun ace-link--woman-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (push-button)))
+
+(defun ace-link--woman-collect ()
+  "Collect all links visible in the current `woman-mode' buffer."
+  (let ((end (window-end))
+        candidates)
+    (save-excursion
+      (goto-char (window-start))
+      (while (and (condition-case nil (forward-button 1)
+                    (error nil))
+                  (< (point) end))
+        (push (cons (button-label (button-at (point))) (point))
+              candidates))
+      (nreverse candidates))))
 
 ;;** EWW
-(declare-function eww-follow-link "eww")
-
 ;;;###autoload
 (defun ace-link-eww ()
   "Open a visible link in an `eww-mode' buffer."
@@ -257,17 +271,6 @@
           (when (get-char-property (point) 'button)
             (push (point) candidates)))))
     (nreverse candidates)))
-
-(defun ali--woman-collect-references ()
-  "Collect all links visible in the current `woman-mode' buffer."
-  (let ((candidates)
-        (end (window-end)))
-    (save-excursion
-      (goto-char (window-start))
-      (while (and (condition-case nil (forward-button 1)
-               (error nil)) (< (point) end))
-        (push (point) candidates))
-      (nreverse candidates))))
 
 (defun ali--eww-collect-references ()
   "Collect the positions of visible links in the current `eww' buffer."
