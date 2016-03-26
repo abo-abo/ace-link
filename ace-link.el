@@ -154,25 +154,53 @@
 (defun ace-link-eww ()
   "Open a visible link in an `eww-mode' buffer."
   (interactive)
-  (let ((res (avy-with ace-link-eww
-               (avy--process
-                (ali--eww-collect-references)
-                #'avy--overlay-post))))
-    (when res
-      (goto-char (1+ res))
-      (eww-follow-link))))
+  (let ((pt (avy-with ace-link-eww
+              (avy--process
+               (mapcar #'cdr (ace-link--eww-collect))
+               #'avy--overlay-post))))
+    (ace-link--eww-action pt)))
 
+(declare-function eww-follow-link "eww")
+
+(defun ace-link--eww-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (eww-follow-link)))
+
+(defun ace-link--eww-collect ()
+  "Collect the positions of visible links in the current `eww' buffer."
+  (save-excursion
+    (save-restriction
+      (narrow-to-region
+       (window-start)
+       (window-end))
+      (goto-char (point-min))
+      (let (beg end candidates)
+        (setq end (text-property-any
+                   (point) (point-max) 'help-echo nil))
+        (while (setq beg (text-property-not-all
+                          end (point-max) 'help-echo nil))
+          (goto-char beg)
+          (setq end (text-property-any
+                     (point) (point-max) 'help-echo nil))
+          (push (cons (buffer-substring-no-properties beg end) beg)
+                candidates))
+        (nreverse candidates)))))
+
+;;** Compilation
 ;;;###autoload
 (defun ace-link-compilation ()
   "Open a visible link in a `compilation-mode' buffer."
   (interactive)
   (let ((res (avy-with ace-link-compilation
                (avy--process
-                (ali--eww-collect-references)
+                (mapcar #'cdr (ace-link--eww-collect))
                 #'avy--overlay-post))))
     (when res
       (goto-char (1+ res))
       (compile-goto-error))))
+
+(declare-function compile-goto-error "compile")
 
 ;;** GNUS
 (declare-function gnus-summary-widget-forward "gnus-sum")
@@ -204,7 +232,7 @@
                (avy--process
                 (ali--org-collect-references)
                 #'avy--overlay-pre))))
-    (when res
+    (when (numberp res)
       (goto-char res)
       (org-open-at-point))))
 
@@ -271,25 +299,6 @@
           (when (get-char-property (point) 'button)
             (push (point) candidates)))))
     (nreverse candidates)))
-
-(defun ali--eww-collect-references ()
-  "Collect the positions of visible links in the current `eww' buffer."
-  (save-excursion
-    (save-restriction
-      (narrow-to-region
-       (window-start)
-       (window-end))
-      (goto-char (point-min))
-      (let ((skip (text-property-any (point) (point-max)
-                                     'help-echo nil))
-            candidates)
-        (while (setq skip (text-property-not-all
-                           skip (point-max) 'help-echo nil))
-          (goto-char skip)
-          (push skip candidates)
-          (setq skip (text-property-any (point) (point-max)
-                                        'help-echo nil)))
-        (nreverse candidates)))))
 
 (declare-function outline-invisible-p "outline")
 (defvar org-any-link-re)
