@@ -246,23 +246,46 @@
         (nreverse candidates)))))
 
 ;;* `ace-link-org'
-(declare-function org-open-at-point "org")
-
 ;;;###autoload
 (defun ace-link-org ()
   "Open a visible link in an `org-mode' buffer."
   (interactive)
   (require 'org)
-  (let ((res (avy-with ace-link-org
+  (let ((pt (avy-with ace-link-org
                (avy--process
-                (ali--org-collect-references)
+                (mapcar #'cdr (ace-link--org-collect))
                 #'avy--overlay-pre))))
-    (when (numberp res)
-      (goto-char res)
-      (org-open-at-point))))
+    (ace-link--org-action pt)))
 
-(declare-function Custom-newline "cus-edit")
+(declare-function org-open-at-point "org")
+(declare-function outline-invisible-p "outline")
+(defvar org-any-link-re)
 
+(defun ace-link--org-action (pt)
+  (when (numberp pt)
+    (goto-char pt)
+    (org-open-at-point)))
+
+(defun ace-link--org-collect ()
+  (let ((end (window-end))
+        res)
+    (save-excursion
+      (goto-char (window-start))
+      (while (re-search-forward org-any-link-re end t)
+        ;; Check that the link is visible. Look at the last character
+        ;; position in the link ("...X]]") to cover links with and
+        ;; without a description.
+        (when (not (outline-invisible-p (- (match-end 0) 3)))
+          (push
+           (cons
+            (buffer-substring-no-properties
+             (match-beginning 0)
+             (match-end 0))
+            (match-beginning 0))
+           res)))
+      (nreverse res))))
+
+;;* `ace-link-custom'
 ;;;###autoload
 (defun ace-link-custom ()
   "Open a visible link in an `Custom-mode' buffer."
@@ -275,6 +298,9 @@
       (goto-char res)
       (Custom-newline (point)))))
 
+(declare-function Custom-newline "cus-edit")
+
+;;* `ace-link-addr'
 ;;;###autoload
 (defun ace-link-addr ()
   "Open a visible link in a goto-address buffer."
@@ -304,21 +330,6 @@
           (when (get-char-property (point) 'button)
             (push (point) candidates)))))
     (nreverse candidates)))
-
-(declare-function outline-invisible-p "outline")
-(defvar org-any-link-re)
-(defun ali--org-collect-references ()
-  (let ((end (window-end))
-        points)
-    (save-excursion
-      (goto-char (window-start))
-      (while (re-search-forward org-any-link-re end t)
-        ;; Check that the link is visible. Look at the last character
-        ;; position in the link ("...X]]") to cover links with and
-        ;; without a description.
-        (when (not (outline-invisible-p (- (match-end 0) 3)))
-          (push (match-beginning 0) points)))
-      (nreverse points))))
 
 (defun ali--addr-collect-references ()
   (let (candidates)
