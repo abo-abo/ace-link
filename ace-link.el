@@ -47,13 +47,13 @@
   (cl-case major-mode
     (Info-mode
      (ace-link-info))
-    (help-mode
+    ((help-mode package-menu-mode)
      (ace-link-help))
     (woman-mode
      (ace-link-woman))
     (eww-mode
      (ace-link-eww))
-    (compilation-mode
+    ((compilation-mode grep-mode)
      (ace-link-compilation))
     (gnus-mode
      (ace-link-gnus))
