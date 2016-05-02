@@ -200,8 +200,11 @@
        (window-end))
       (goto-char (point-min))
       (let (beg end candidates)
-        (setq end (text-property-any
-                   (point) (point-max) 'help-echo nil))
+        (setq end
+              (if (get-text-property (point) 'help-echo)
+                  (point)
+                (text-property-any
+                 (point) (point-max) 'help-echo nil)))
         (while (setq beg (text-property-not-all
                           end (point-max) 'help-echo nil))
           (goto-char beg)
