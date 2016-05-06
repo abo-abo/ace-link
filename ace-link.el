@@ -133,14 +133,14 @@
 (defun ace-link--help-collect ()
   "Collect the positions of visible links in the current `help-mode' buffer."
   (let ((skip (text-property-any
-               (point-min) (point-max) 'button nil))
+               (window-start) (window-end) 'button nil))
         candidates)
     (save-excursion
       (while (setq skip (text-property-not-all
-                         skip (point-max) 'button nil))
+                         skip (window-end) 'button nil))
         (goto-char skip)
         (push (cons (button-label (button-at skip)) skip) candidates)
-        (setq skip (text-property-any (point) (point-max)
+        (setq skip (text-property-any (point) (window-end)
                                       'button nil))))
     (nreverse candidates)))
 
