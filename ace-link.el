@@ -4,7 +4,7 @@
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
-;; Version: 0.3.0
+;; Version: 0.4.0
 ;; Package-Requires: ((avy "0.2.0"))
 ;; Keywords: convenience, links
 
