@@ -97,7 +97,7 @@
   (cons (cl-letf (((symbol-function #'Info-goto-node)
                    (lambda (node _) node)))
           (Info-try-follow-nearest-node))
-        (point)))
+        (1- (point))))
 
 (defun ace-link--info-collect ()
   "Collect the positions of visible links in the current `Info-mode' buffer."
@@ -381,7 +381,7 @@
   "Bind KEY to appropriate functions in appropriate keymaps."
   (setq key (or key "o"))
   (add-to-list 'avy-styles-alist
-               '(ace-link-info . post))
+               '(ace-link-info . at))
   (add-to-list 'avy-styles-alist
                '(ace-link-help . post))
   (add-to-list 'avy-styles-alist
