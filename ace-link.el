@@ -55,7 +55,7 @@
      (ace-link-eww))
     ((compilation-mode grep-mode)
      (ace-link-compilation))
-    (gnus-mode
+    (gnus-article-mode
      (ace-link-gnus))
     (org-mode
      (ace-link-org))
