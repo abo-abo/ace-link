@@ -95,8 +95,10 @@
 (defun ace-link--info-current ()
   "Return the node at point."
   (cons (cl-letf (((symbol-function #'Info-goto-node)
-                   (lambda (node _) node)))
-          (Info-try-follow-nearest-node))
+                   (lambda (node _) node))
+                  (browse-url-browser-function
+                   (lambda (url &rest _) url)))
+          (Info-try-follow-nearest-node t))
         (1- (point))))
 
 (defun ace-link--info-collect ()
