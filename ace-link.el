@@ -98,7 +98,7 @@
                    (lambda (node _) node))
                   (browse-url-browser-function
                    (lambda (url &rest _) url)))
-          (Info-try-follow-nearest-node t))
+          (Info-try-follow-nearest-node))
         (1- (point))))
 
 (defun ace-link--info-collect ()
