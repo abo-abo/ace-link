@@ -101,7 +101,7 @@
                   (browse-url-browser-function
                    (lambda (url &rest _) url)))
           (Info-try-follow-nearest-node))
-        (1- (point))))
+        (point)))
 
 (defun ace-link--info-collect ()
   "Collect the positions of visible links in the current `Info-mode' buffer."
