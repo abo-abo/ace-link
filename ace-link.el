@@ -44,25 +44,27 @@
 (defun ace-link ()
   "Call the ace link function for the current `major-mode'"
   (interactive)
-  (cl-case major-mode
-    (Info-mode
-     (ace-link-info))
-    ((help-mode package-menu-mode)
-     (ace-link-help))
-    (woman-mode
-     (ace-link-woman))
-    (eww-mode
-     (ace-link-eww))
-    ((compilation-mode grep-mode)
-     (ace-link-compilation))
-    (gnus-article-mode
-     (ace-link-gnus))
-    (org-mode
-     (ace-link-org))
-    (Custom-mode
-     (ace-link-org))
-    (t
-     (error "%S isn't supported" major-mode))))
+  (cond ((eq major-mode 'Info-mode)
+         (ace-link-info))
+        ((member major-mode '(help-mode package-menu-mode))
+         (ace-link-help))
+        ((eq major-mode 'woman-mode)
+         (ace-link-woman))
+        ((eq major-mode 'eww-mode)
+         (ace-link-eww))
+        ((or (member major-mode '(compilation-mode grep-mode))
+             (bound-and-true-p compilation-shell-minor-mode))
+         (ace-link-compilation))
+        ((eq major-mode 'gnus-article-mode)
+         (ace-link-gnus))
+        ((eq major-mode 'org-mode)
+         (ace-link-org))
+        ((eq major-mode 'Custom-mode)
+         (ace-link-org))
+        (t
+         (error
+          "%S isn't supported"
+          major-mode))))
 
 ;;* `ace-link-info'
 ;;;###autoload
