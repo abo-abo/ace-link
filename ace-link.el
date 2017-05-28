@@ -65,7 +65,7 @@
         ((eq major-mode 'Custom-mode)
          (ace-link-org))
         ((and ace-link-fallback-function
-              (funcall 'ace-link-fallback-function)))
+              (funcall ace-link-fallback-function)))
         (t
          (error
           "%S isn't supported"
