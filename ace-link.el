@@ -284,6 +284,63 @@
             (push (point) candidates)))
         (nreverse candidates)))))
 
+;;* `ace-link-mu4e'
+;;;###autoload
+(defun ace-link-mu4e ()
+  "Open a visible link in an `mu4e-view-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-mu4e
+              (avy--process
+               (mapcar #'cdr (ace-link--mu4e-collect))
+               (avy--style-fn avy-style)))))
+    (ace-link--mu4e-action pt)))
+
+(defun ace-link--mu4e-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (cond ((get-text-property (point) 'shr-url)
+           (shr-browse-url))
+          ((get-text-property (point) 'mu4e-url)
+           (mu4e~view-browse-url-from-binding)))))
+
+(defun ace-link--get-text-property-multiple (pos props)
+  (some (lambda (prop) (get-text-property pos prop)) props))
+
+(defun ace-link--text-property-not-all-multiple (start end props)
+  (some (lambda (prop) (text-property-not-all start end prop nil)) props))
+
+(defun ace-link--text-property-any-multiple (start end props)
+  (some (lambda (prop) (text-property-any start end prop nil)) props))
+
+(defun ace-link--mu4e-collect ()
+  "Collect the positions of visible links in the current mu4e buffer."
+  (save-excursion
+    (save-restriction
+      (narrow-to-region
+       (window-start)
+       (window-end))
+      (goto-char (point-min))
+      (let ((link-props '(shr-url mu4e-url))
+            (beg)
+            (end)
+            (candidates))
+        (setq end
+              (if (ace-link--get-text-property-multiple
+                   (point) link-props)
+                  (point)
+                (ace-link--text-property-not-all-multiple
+                 (point) (point-max) link-props)))
+        (while (setq beg (ace-link--text-property-not-all-multiple
+                          end (point-max) link-props))
+          (goto-char beg)
+          (setq end (ace-link--text-property-any-multiple
+                     (point) (point-max) link-props))
+          (unless end
+            (setq end (point-max)))
+          (push (cons (buffer-substring-no-properties beg end) beg)
+                candidates))
+        (nreverse candidates)))))
+
 ;;* `ace-link-org'
 ;;;###autoload
 (defun ace-link-org ()
@@ -435,6 +492,8 @@
                '(ace-link-compilation . post))
   (add-to-list 'avy-styles-alist
                '(ace-link-gnus . post))
+  (add-to-list 'avy-styles-alist
+               '(ace-link-mu4e . post))
   (add-to-list 'avy-styles-alist
                '(ace-link-org . pre))
   (add-to-list 'avy-styles-alist
