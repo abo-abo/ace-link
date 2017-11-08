@@ -1,12 +1,12 @@
 ;;; ace-link.el --- Quickly follow links
 
-;; Copyright (C) 2014-2015 Oleh Krehel
+;; Copyright (C) 2014-2017 Oleh Krehel
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
-;; Version: 0.4.0
-;; Package-Requires: ((avy "0.2.0"))
-;; Keywords: convenience, links
+;; Version: 0.5.0
+;; Package-Requires: ((avy "0.4.0"))
+;; Keywords: convenience, links, avy
 
 ;; This file is not part of GNU Emacs
 
@@ -295,6 +295,9 @@
                (avy--style-fn avy-style)))))
     (ace-link--mu4e-action pt)))
 
+(declare-function shr-browse-url "shr")
+(declare-function mu4e~view-browse-url-from-binding "ext:mu4e-view")
+
 (defun ace-link--mu4e-action (pt)
   (when (number-or-marker-p pt)
     (goto-char (1+ pt))
@@ -304,13 +307,13 @@
            (mu4e~view-browse-url-from-binding)))))
 
 (defun ace-link--get-text-property-multiple (pos props)
-  (some (lambda (prop) (get-text-property pos prop)) props))
+  (cl-some (lambda (prop) (get-text-property pos prop)) props))
 
 (defun ace-link--text-property-not-all-multiple (start end props)
-  (some (lambda (prop) (text-property-not-all start end prop nil)) props))
+  (cl-some (lambda (prop) (text-property-not-all start end prop nil)) props))
 
 (defun ace-link--text-property-any-multiple (start end props)
-  (some (lambda (prop) (text-property-any start end prop nil)) props))
+  (cl-some (lambda (prop) (text-property-any start end prop nil)) props))
 
 (defun ace-link--mu4e-collect ()
   "Collect the positions of visible links in the current mu4e buffer."
