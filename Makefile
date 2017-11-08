@@ -1,15 +1,10 @@
-emacs ?= emacs
-CASK = ~/.cask/bin/cask
-BEMACS = $(emacs) -batch -l targets/elpa.el
+update:
+	emacs -batch -l test/make-update.el
 
-all: compile test
+compile: clean
+	emacs -batch -l test/elpa.el -l test/make-compile.el
 
-cask:
-	$(shell EMACS=$(emacs) $(CASK) --verbose --debug)
-
-compile:
-	$(BEMACS) -l targets/compile.el
 clean:
 	rm -f *.elc
 
-.PHONY: all clean cask
+.PHONY: update compile clean
