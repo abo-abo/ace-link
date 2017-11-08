@@ -306,14 +306,20 @@
           ((get-text-property (point) 'mu4e-url)
            (mu4e~view-browse-url-from-binding)))))
 
-(defun ace-link--get-text-property-multiple (pos props)
-  (cl-some (lambda (prop) (get-text-property pos prop)) props))
+(defun ace-link--mu4e-next-link (pos)
+  (let ((shr-link-pos (text-property-not-all pos (point-max) 'shr-url nil))
+        (mu4e-link-pos (text-property-not-all pos (point-max) 'mu4e-url nil)))
+    (cond ((and shr-link-pos mu4e-link-pos)
+           (if (< shr-link-pos mu4e-link-pos)
+               (list 'shr-url shr-link-pos)
+             (list 'mu4e-url mu4e-link-pos)))
+          (shr-link-pos (list 'shr-url shr-link-pos))
+          (mu4e-link-pos (list 'mu4e-url mu4e-link-pos))
+          (t nil))))
 
-(defun ace-link--text-property-not-all-multiple (start end props)
-  (cl-some (lambda (prop) (text-property-not-all start end prop nil)) props))
-
-(defun ace-link--text-property-any-multiple (start end props)
-  (cl-some (lambda (prop) (text-property-any start end prop nil)) props))
+(defun ace-link--mu4e-end-of-link (link)
+  (or (text-property-any (elt link 1) (point-max) (elt link 0) nil)
+      (point-max)))
 
 (defun ace-link--mu4e-collect ()
   "Collect the positions of visible links in the current mu4e buffer."
@@ -323,25 +329,12 @@
        (window-start)
        (window-end))
       (goto-char (point-min))
-      (let ((link-props '(shr-url mu4e-url))
-            (beg)
-            (end)
-            (candidates))
-        (setq end
-              (if (ace-link--get-text-property-multiple
-                   (point) link-props)
-                  (point)
-                (ace-link--text-property-not-all-multiple
-                 (point) (point-max) link-props)))
-        (while (setq beg (ace-link--text-property-not-all-multiple
-                          end (point-max) link-props))
-          (goto-char beg)
-          (setq end (ace-link--text-property-any-multiple
-                     (point) (point-max) link-props))
-          (unless end
-            (setq end (point-max)))
-          (push (cons (buffer-substring-no-properties beg end) beg)
-                candidates))
+      (let (link pos candidates)
+        (setq pos (point))
+        (while (setq link (ace-link--mu4e-next-link pos))
+          (goto-char (elt link 1))
+          (setq pos (ace-link--mu4e-end-of-link link))
+          (push (cons (buffer-substring-no-properties (elt link 1) pos) (elt link 1)) candidates))
         (nreverse candidates)))))
 
 ;;* `ace-link-org'
