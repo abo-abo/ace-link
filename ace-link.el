@@ -304,18 +304,27 @@
     (cond ((get-text-property (point) 'shr-url)
            (shr-browse-url))
           ((get-text-property (point) 'mu4e-url)
-           (mu4e~view-browse-url-from-binding)))))
+           (mu4e~view-browse-url-from-binding))
+          ((get-text-property (point) 'mu4e-attnum)
+           (mu4e~view-open-attach-from-binding)))))
 
 (defun ace-link--mu4e-next-link (pos)
-  (let ((shr-link-pos (text-property-not-all pos (point-max) 'shr-url nil))
-        (mu4e-link-pos (text-property-not-all pos (point-max) 'mu4e-url nil)))
-    (cond ((and shr-link-pos mu4e-link-pos)
-           (if (< shr-link-pos mu4e-link-pos)
-               (list 'shr-url shr-link-pos)
-             (list 'mu4e-url mu4e-link-pos)))
-          (shr-link-pos (list 'shr-url shr-link-pos))
-          (mu4e-link-pos (list 'mu4e-url mu4e-link-pos))
-          (t nil))))
+  (let* ((shr-link-pos (text-property-not-all pos (point-max) 'shr-url nil))
+         (mu4e-link-pos (text-property-not-all pos (point-max) 'mu4e-url nil))
+         (mu4e-att-link-pos (text-property-not-all pos (point-max) 'mu4e-attnum nil))
+         (links (seq-filter
+                 (lambda (link)
+                   (elt link 1))
+                 (list
+                  (list 'shr-url shr-link-pos)
+                  (list 'mu4e-url mu4e-link-pos)
+                  (list 'mu4e-attnum mu4e-att-link-pos)))))
+
+    (if links
+        (car
+         (sort links (lambda (x y)
+                       (< (elt x 1) (elt y 1)))))
+      nil)))
 
 (defun ace-link--mu4e-end-of-link (link)
   (or (text-property-any (elt link 1) (point-max) (elt link 0) nil)
