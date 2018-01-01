@@ -419,6 +419,36 @@
                                       'org-marker nil))))
     (nreverse candidates)))
 
+;;* `ace-link-xref'
+;;;###autoload
+(defun ace-link-xref ()
+  "Open a visible link in an `xref--xref-buffer-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-xref
+              (avy--process
+               (ace-link--xref-collect)
+               (avy--style-fn avy-style)))))
+    (ace-link--xref-action pt)))
+
+(declare-function xref-goto-xref "xref")
+
+(defun ace-link--xref-action (pt)
+  (when (numberp pt)
+    (goto-char pt)
+    (xref-goto-xref)))
+
+(defun ace-link--xref-collect ()
+  (let ((skip (text-property-any
+               (window-start) (window-end) 'xref-item nil))
+        candidates)
+    (save-excursion
+      (while (setq skip (text-property-not-all
+                         skip (window-end) 'xref-item nil))
+        (push (goto-char skip) candidates)
+        (setq skip (text-property-any (point) (window-end)
+                                      'xref-item nil))))
+    (nreverse candidates)))
+
 ;;* `ace-link-custom'
 ;;;###autoload
 (defun ace-link-custom ()
@@ -508,6 +538,10 @@
                '(ace-link-custom . pre))
   (add-to-list 'avy-styles-alist
                '(ace-link-addr . pre))
+  (add-to-list 'avy-styles-alist
+               '(ace-link-xref . at))
+  (eval-after-load "xref"
+    `(define-key xref--xref-buffer-mode-map ,key 'ace-link-xref))
   (eval-after-load "info"
     `(define-key Info-mode-map ,key 'ace-link-info))
   (eval-after-load "compile"
