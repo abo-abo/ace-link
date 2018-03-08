@@ -49,7 +49,7 @@
   (interactive)
   (cond ((eq major-mode 'Info-mode)
          (ace-link-info))
-        ((member major-mode '(help-mode package-menu-mode geiser-doc-mode))
+        ((member major-mode '(help-mode package-menu-mode geiser-doc-mode elbank-report-mode elbank-overview-mode))
          (ace-link-help))
         ((eq major-mode 'woman-mode)
          (ace-link-woman))
@@ -604,7 +604,13 @@
        (define-key custom-mode-map ,key 'ace-link-custom)))
   (eval-after-load "helpful"
     `(progn
-       (define-key helpful-mode-map ,key 'ace-link-help))))
+       (define-key helpful-mode-map ,key 'ace-link-help)))
+  (eval-after-load "elbank-overview"
+    `(progn
+       (define-key elbank-overview-mode-map ,key 'ace-link-help)))
+  (eval-after-load "elbank-report"
+    `(progn
+       (define-key elbank-report-mode-map ,key 'ace-link-help))))
 
 (provide 'ace-link)
 
