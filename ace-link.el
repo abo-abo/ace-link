@@ -68,6 +68,8 @@
          (ace-link-org-agenda))
         ((eq major-mode 'Custom-mode)
          (ace-link-org))
+        ((eq major-mode 'sldb-mode)
+         (ace-link-sldb))
         ((and ace-link-fallback-function
               (funcall ace-link-fallback-function)))
         (t
@@ -550,6 +552,48 @@
           (push (overlay-start overlay) candidates)))
     (nreverse candidates)))
 
+;;* `ace-link-sldb'
+;;;###autoload
+(defun ace-link-sldb ()
+  "Interact with a frame or local variable in a sldb buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-sldb
+              (avy--process
+               (ace-link--sldb-collect)
+               (avy--style-fn avy-style)))))
+      (ace-link--sldb-action pt)))
+
+(declare-function sldb-default-action "slime")
+
+(defvar ace-link--sldb-action-fn #'sldb-default-action
+  "Function to call after jump.")
+
+(defun ace-link--sldb-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (funcall ace-link--sldb-action-fn)))
+
+(defun ace-link--sldb-collect ()
+  (let ((vars (list))
+        (frames (list))
+        (frame-prop 'frame)
+        (var-face 'sldb-local-value-face))
+    (save-excursion
+      (goto-char (window-start))
+      (while (< (point) (window-end))
+        (when (get-text-property (point) frame-prop)
+          (if (get-text-property (point) 'var)
+              (push (text-property-any
+                     (point)
+                     (line-end-position)
+                     'face var-face)
+                    vars)
+            (push (point) frames)
+            (point)))
+        (forward-visible-line 1)))
+    ;; sort variables before frames
+    (nreverse (nconc frames vars))))
+
 ;;* Bindings
 (defvar eww-link-keymap)
 (defvar eww-mode-map)
@@ -585,6 +629,8 @@
                '(ace-link-addr . pre))
   (add-to-list 'avy-styles-alist
                '(ace-link-xref . at))
+  (add-to-list 'avy-styles-alist
+               '(ace-link-sldb . pre))
   (eval-after-load "xref"
     `(define-key xref--xref-buffer-mode-map ,key 'ace-link-xref))
   (eval-after-load "info"
