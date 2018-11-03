@@ -49,7 +49,8 @@
   (interactive)
   (cond ((eq major-mode 'Info-mode)
          (ace-link-info))
-        ((member major-mode '(help-mode package-menu-mode geiser-doc-mode elbank-report-mode elbank-overview-mode))
+        ((member major-mode '(help-mode package-menu-mode geiser-doc-mode elbank-report-mode
+                                        elbank-overview-mode slime-trace-dialog-mode))
          (ace-link-help))
         ((eq major-mode 'woman-mode)
          (ace-link-woman))
