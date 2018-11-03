@@ -70,6 +70,8 @@
          (ace-link-org))
         ((eq major-mode 'sldb-mode)
          (ace-link-sldb))
+        ((eq major-mode 'slime-xref-mode)
+         (ace-link-slime-xref))
         ((and ace-link-fallback-function
               (funcall ace-link-fallback-function)))
         (t
@@ -594,6 +596,35 @@
     ;; sort variables before frames
     (nreverse (nconc frames vars))))
 
+;;* `ace-link-slime-xref'
+;;;###autoload
+(defun ace-link-slime-xref ()
+  "Open a visible link in an `slime-xref-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-slime-xref
+              (avy--process
+               (ace-link--slime-xref-collect)
+               (avy--style-fn avy-style)))))
+      (ace-link--slime-xref-action pt)))
+
+(declare-function slime-goto-xref "slime.el")
+
+(defun ace-link--slime-xref-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (slime-goto-xref)))
+
+(defun ace-link--slime-xref-collect ()
+  (let ((candidates (list))
+        (prop 'slime-location)
+        (pt (window-start)))
+    (while (and pt (< pt (window-end)))
+      (when (get-text-property pt prop)
+        (push pt candidates))
+      (setq pt (next-single-property-change pt prop)))
+    (nreverse candidates)))
+    (nreverse candidates)))
+
 ;;* Bindings
 (defvar eww-link-keymap)
 (defvar eww-mode-map)
@@ -631,6 +662,8 @@
                '(ace-link-xref . at))
   (add-to-list 'avy-styles-alist
                '(ace-link-sldb . pre))
+  (add-to-list 'avy-styles-alist
+               '(ace-link-slime-xref . pre))
   (eval-after-load "xref"
     `(define-key xref--xref-buffer-mode-map ,key 'ace-link-xref))
   (eval-after-load "info"
