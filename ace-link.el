@@ -72,6 +72,8 @@
          (ace-link-sldb))
         ((eq major-mode 'slime-xref-mode)
          (ace-link-slime-xref))
+        ((eq major-mode 'slime-inspector-mode)
+         (ace-link-slime-inspector))
         ((and ace-link-fallback-function
               (funcall ace-link-fallback-function)))
         (t
@@ -623,6 +625,42 @@
         (push pt candidates))
       (setq pt (next-single-property-change pt prop)))
     (nreverse candidates)))
+
+
+;;* `ace-link-slime-inspector'
+;;;###autoload
+(defun ace-link-slime-inspector ()
+  "Interact with a value, an action or a range button in a
+`slime-inspector-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-slime-inspector
+              (avy--process
+               (ace-link--slime-inspector-collect)
+               (avy--style-fn avy-style)))))
+      (ace-link--slime-inspector-action pt)))
+
+(declare-function slime-inspector-operate-on-point "slime.el")
+(declare-function slime-inspector-copy-down-to-repl "slime.el")
+
+(defun ace-link--slime-inspector-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (if (= pt 1)
+        (call-interactively #'slime-inspector-copy-down-to-repl)
+      (slime-inspector-operate-on-point))))
+
+(defun ace-link--slime-inspector-collect ()
+  (let ((candidates (list))
+        (part 'slime-part-number)
+        (range 'slime-range-button)
+        (action 'slime-action-number)
+        (pt (window-start)))
+    (while (and pt (< pt (window-end)))
+      (when (or (get-text-property pt part)
+                (get-text-property pt range)
+                (get-text-property pt action))
+        (push pt candidates))
+      (setq pt (next-property-change pt)))
     (nreverse candidates)))
 
 ;;* Bindings
@@ -664,6 +702,8 @@
                '(ace-link-sldb . pre))
   (add-to-list 'avy-styles-alist
                '(ace-link-slime-xref . pre))
+  (add-to-list 'avy-styles-alist
+               '(ace-link-slime-inspector . pre))
   (eval-after-load "xref"
     `(define-key xref--xref-buffer-mode-map ,key 'ace-link-xref))
   (eval-after-load "info"
