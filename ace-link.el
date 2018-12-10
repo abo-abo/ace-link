@@ -75,6 +75,10 @@
          (ace-link-slime-xref))
         ((eq major-mode 'slime-inspector-mode)
          (ace-link-slime-inspector))
+        ((eq major-mode 'indium-inspector-mode)
+         (ace-link-indium-inspector))
+        ((eq major-mode 'indium-debugger-frames-mode)
+         (ace-link-indium-debugger-frames))
         ((and ace-link-fallback-function
               (funcall ace-link-fallback-function)))
         (t
@@ -664,6 +668,68 @@
       (setq pt (next-property-change pt)))
     (nreverse candidates)))
 
+;;* `ace-link-indium-inspector'
+;;;###autoload
+(defun ace-link-indium-inspector ()
+  "Interact with a value, an action or a range button in a
+`indium-inspector-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-indium-inspector
+              (avy--process
+               (ace-link--indium-inspector-collect)
+               (avy--style-fn avy-style)))))
+    (ace-link--indium-inspector-action pt)))
+
+(defun ace-link--indium-inspector-action (pt)
+  (when (numberp pt)
+    (goto-char pt)
+    (indium-follow-link)))
+
+(defun ace-link--indium-inspector-collect ()
+  "Collect the positions of visible links in the current `indium-inspector-mode' buffer."
+  (let ((candidates)
+        (old-position))
+    (save-excursion
+      (goto-char (point-max))
+      (setq old-position (point))
+      (indium-inspector-previous-reference)
+      (while (not (= (point) old-position))
+        (push (point) candidates)
+        (setq old-position (point))
+        (indium-inspector-previous-reference)))
+    candidates))
+
+;;* `ace-link-indium-debugger-frames'
+;;;###autoload
+(defun ace-link-indium-debugger-frames ()
+  "Interact with a value, an action or a range button in a
+`indium-debugger-frames-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-indium-debugger-frames
+              (avy--process
+               (ace-link--indium-debugger-frames-collect)
+               (avy--style-fn avy-style)))))
+    (ace-link--indium-debugger-frames-action pt)))
+
+(defun ace-link--indium-debugger-frames-action (pt)
+  (when (numberp pt)
+    (goto-char pt)
+    (indium-follow-link)))
+
+(defun ace-link--indium-debugger-frames-collect ()
+  "Collect the positions of visible links in the current `indium-debugger-frames-mode' buffer."
+  (let ((candidates)
+        (old-position))
+    (save-excursion
+      (goto-char (point-max))
+      (setq old-position (point))
+      (indium-debugger-frames-previous-frame)
+      (while (and (not (= (point) old-position)) (not (= (point) (point-min))))
+        (push (point) candidates)
+        (setq old-position (point))
+        (indium-debugger-frames-previous-frame)))
+    candidates))
+
 ;;* Bindings
 (defvar eww-link-keymap)
 (defvar eww-mode-map)
@@ -730,7 +796,13 @@
        (define-key elbank-overview-mode-map ,key 'ace-link-help)))
   (eval-after-load "elbank-report"
     `(progn
-       (define-key elbank-report-mode-map ,key 'ace-link-help))))
+       (define-key elbank-report-mode-map ,key 'ace-link-help)))
+  (eval-after-load "indium-inspector"
+    `(progn
+       (define-key indium-inspector-mode-map ,key 'ace-link-indium-inspector)))
+  (eval-after-load "indium-debugger"
+    `(progn
+       (define-key indium-debugger-frames-mode-map ,key 'ace-link-indium-debugger-frames))))
 
 (provide 'ace-link)
 
