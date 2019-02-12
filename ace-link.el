@@ -63,7 +63,7 @@
          (ace-link-compilation))
         ((eq major-mode 'gnus-article-mode)
          (ace-link-gnus))
-        ((memq major-mode '(org-mode erc-mode))
+        ((memq major-mode '(org-mode erc-mode elfeed-show-mode))
          (ace-link-org))
         ((eq major-mode 'org-agenda-mode)
          (ace-link-org-agenda))
