@@ -68,7 +68,7 @@
         ((eq major-mode 'org-agenda-mode)
          (ace-link-org-agenda))
         ((eq major-mode 'Custom-mode)
-         (ace-link-org))
+         (ace-link-custom))
         ((eq major-mode 'sldb-mode)
          (ace-link-sldb))
         ((eq major-mode 'slime-xref-mode)
