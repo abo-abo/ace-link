@@ -63,7 +63,7 @@
          (ace-link-compilation))
         ((eq major-mode 'gnus-article-mode)
          (ace-link-gnus))
-        ((memq major-mode '(org-mode erc-mode elfeed-show-mode))
+        ((memq major-mode '(org-mode erc-mode elfeed-show-mode term-mode))
          (ace-link-org))
         ((eq major-mode 'org-agenda-mode)
          (ace-link-org-agenda))
@@ -92,7 +92,7 @@
   "Open a visible link in an `Info-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-info
-              (avy--process
+              (avy-process
                (mapcar #'cdr
                        (ace-link--info-collect))
                (avy--style-fn avy-style)))))
@@ -144,7 +144,7 @@
   "Open a visible link in a `help-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-help
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--help-collect))
                (avy--style-fn avy-style)))))
     (ace-link--help-action pt)))
@@ -174,7 +174,7 @@
   "Open a visible link in a `woman-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-woman
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--woman-collect))
                (avy--style-fn avy-style)))))
     (ace-link--woman-action pt)))
@@ -203,7 +203,7 @@
   "Open a visible link in an `eww-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-eww
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--eww-collect))
                (avy--style-fn avy-style)))))
     (ace-link--eww-action pt)))
@@ -245,7 +245,7 @@
   (interactive)
   (require 'w3m)
   (let ((pt (avy-with ace-link-w3m
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--w3m-collect))
                (avy--style-fn avy-style)))))
     (ace-link--w3m-action pt)))
@@ -285,7 +285,7 @@
   "Open a visible link in a `compilation-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-compilation
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--eww-collect))
                (avy--style-fn avy-style)))))
     (ace-link--compilation-action pt)))
@@ -305,7 +305,7 @@
   (when (eq major-mode 'gnus-summary-mode)
     (gnus-summary-widget-forward 1))
   (let ((pt (avy-with ace-link-gnus
-              (avy--process
+              (avy-process
                (ace-link--gnus-collect)
                (avy--style-fn avy-style)))))
     (ace-link--gnus-action pt)))
@@ -344,7 +344,7 @@
   "Open a visible link in an `mu4e-view-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-mu4e
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--mu4e-collect))
                (avy--style-fn avy-style)))))
     (ace-link--mu4e-action pt)))
@@ -408,7 +408,7 @@
   (interactive)
   (require 'org)
   (let ((pt (avy-with ace-link-org
-               (avy--process
+               (avy-process
                 (mapcar #'cdr (ace-link--org-collect))
                 (avy--style-fn avy-style)))))
     (ace-link--org-action pt)))
@@ -448,7 +448,7 @@
   (interactive)
   (require 'org-agenda)
   (let ((pt (avy-with ace-link-org-agenda
-              (avy--process
+              (avy-process
                (mapcar #'cdr (ace-link--org-agenda-collect))
                (avy--style-fn avy-style)))))
     (ace-link--org-agenda-action pt)))
@@ -479,7 +479,7 @@
   "Open a visible link in an `xref--xref-buffer-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-xref
-              (avy--process
+              (avy-process
                (ace-link--xref-collect)
                (avy--style-fn avy-style)))))
     (ace-link--xref-action pt)))
@@ -509,7 +509,7 @@
   "Open a visible link in an `Custom-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-custom
-              (avy--process
+              (avy-process
                (ace-link--custom-collect)
                (avy--style-fn avy-style)))))
     (ace-link--custom-action pt)))
@@ -544,7 +544,7 @@
   "Open a visible link in a goto-address buffer."
   (interactive)
   (let ((pt (avy-with ace-link-addr
-               (avy--process
+               (avy-process
                 (ace-link--addr-collect)
                 (avy--style-fn avy-style)))))
     (ace-link--addr-action pt)))
@@ -567,7 +567,7 @@
   "Interact with a frame or local variable in a sldb buffer."
   (interactive)
   (let ((pt (avy-with ace-link-sldb
-              (avy--process
+              (avy-process
                (ace-link--sldb-collect)
                (avy--style-fn avy-style)))))
       (ace-link--sldb-action pt)))
@@ -609,7 +609,7 @@
   "Open a visible link in an `slime-xref-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-slime-xref
-              (avy--process
+              (avy-process
                (ace-link--slime-xref-collect)
                (avy--style-fn avy-style)))))
       (ace-link--slime-xref-action pt)))
@@ -639,7 +639,7 @@
 `slime-inspector-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-slime-inspector
-              (avy--process
+              (avy-process
                (ace-link--slime-inspector-collect)
                (avy--style-fn avy-style)))))
       (ace-link--slime-inspector-action pt)))
@@ -675,7 +675,7 @@
 `indium-inspector-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-indium-inspector
-              (avy--process
+              (avy-process
                (ace-link--indium-inspector-collect)
                (avy--style-fn avy-style)))))
     (ace-link--indium-inspector-action pt)))
@@ -706,7 +706,7 @@
 `indium-debugger-frames-mode' buffer."
   (interactive)
   (let ((pt (avy-with ace-link-indium-debugger-frames
-              (avy--process
+              (avy-process
                (ace-link--indium-debugger-frames-collect)
                (avy--style-fn avy-style)))))
     (ace-link--indium-debugger-frames-action pt)))
