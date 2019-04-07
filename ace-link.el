@@ -85,6 +85,8 @@
          (ace-link-indium-debugger-frames))
         ((eq major-mode 'magit-commit-mode)
          (ace-link-commit))
+        ((eq major-mode 'cider-inspector-mode)
+         (ace-link-cider-inspector))
         ((and ace-link-fallback-function
               (funcall ace-link-fallback-function)))
         (t
@@ -822,6 +824,37 @@ looks like manpages with a regular expression."
         (indium-debugger-frames-previous-frame)))
     candidates))
 
+;;* `ace-link-cider-inspector'
+;;;###autoload
+(defun ace-link-cider-inspector ()
+  "Open a visible link in a `cider-inspector-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-cider-inspector
+              (avy-process
+               (ace-link--cider-inspector-collect)
+               (avy--style-fn avy-style)))))
+    (ace-link--cider-inspector-action pt)))
+
+(declare-function 'cider-inspector-operate-on-point "ext:cider")
+
+(defun ace-link--cider-inspector-collect ()
+  "Collect the positions of visible links in the current
+`cider-inspector-mode' buffer."
+  (let ((end (window-end))
+        points)
+    (save-excursion
+      (goto-char (window-start))
+      (while (< (point) end)
+        (goto-char (next-single-property-change (point) 'cider-value-idx nil end))
+        (when (get-text-property (point) 'cider-value-idx)
+          (push (point) points)))
+      (nreverse points))))
+
+(defun ace-link--cider-inspector-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (cider-inspector-operate-on-point)))
+
 ;;* Bindings
 (defvar eww-link-keymap)
 (defvar eww-mode-map)
@@ -897,7 +930,10 @@ looks like manpages with a regular expression."
        (define-key indium-inspector-mode-map ,key 'ace-link-indium-inspector)))
   (eval-after-load "indium-debugger"
     `(progn
-       (define-key indium-debugger-frames-mode-map ,key 'ace-link-indium-debugger-frames))))
+       (define-key indium-debugger-frames-mode-map ,key 'ace-link-indium-debugger-frames)))
+  (eval-after-load "cider-inspector"
+    `(progn
+       (define-key cider-inspector-mode-map ,key 'ace-link-cider-inspector))))
 
 (provide 'ace-link)
 
