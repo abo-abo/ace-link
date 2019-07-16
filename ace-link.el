@@ -63,6 +63,8 @@
          (ace-link-compilation))
         ((eq major-mode 'gnus-article-mode)
          (ace-link-gnus))
+        ((eq major-mode 'mu4e-view-mode)
+         (ace-link-mu4e))
         ((memq major-mode '(org-mode erc-mode elfeed-show-mode term-mode))
          (ace-link-org))
         ((eq major-mode 'org-agenda-mode)
@@ -343,11 +345,13 @@
 (defun ace-link-mu4e ()
   "Open a visible link in an `mu4e-view-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-mu4e
-              (avy-process
-               (mapcar #'cdr (ace-link--mu4e-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--mu4e-action pt)))
+  (if (bound-and-true-p mu4e-view-use-gnus)
+      (ace-link-gnus)
+    (let ((pt (avy-with ace-link-mu4e
+                (avy-process
+                 (mapcar #'cdr (ace-link--mu4e-collect))
+                 (avy--style-fn avy-style)))))
+      (ace-link--mu4e-action pt))))
 
 (declare-function shr-browse-url "shr")
 (declare-function mu4e~view-browse-url-from-binding "ext:mu4e-view")
