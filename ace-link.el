@@ -236,6 +236,9 @@
           (goto-char beg)
           (setq end (text-property-any
                      (point) (point-max) 'help-echo nil))
+          ;; When link at the end of buffer, end will be set to nil.
+          (if (eq end nil)
+              (setq end (point-max)))
           (push (cons (buffer-substring-no-properties beg end) beg)
                 candidates))
         (nreverse candidates)))))
