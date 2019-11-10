@@ -52,6 +52,8 @@
         ((member major-mode '(help-mode package-menu-mode geiser-doc-mode elbank-report-mode
                               elbank-overview-mode slime-trace-dialog-mode helpful-mode))
          (ace-link-help))
+        ((eq major-mode 'Man-mode)
+         (ace-link-man))
         ((eq major-mode 'woman-mode)
          (ace-link-woman))
         ((eq major-mode 'eww-mode)
@@ -203,6 +205,53 @@
                ivy-ffap-url-functions
                :initial-value nil)))
     (funcall ffap-url-fetcher url)))
+
+;;* `ace-link-man'
+;;;###autoload
+(defun ace-link-man ()
+  "Open a visible link in a `man' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-man
+              (avy-process
+               (mapcar #'cdr (ace-link--man-collect))
+               (avy--style-fn avy-style)))))
+    (ace-link--man-action pt)))
+
+(defun ace-link--man-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char (1+ pt))
+    (if (button-at pt)
+        (push-button pt)
+      (call-interactively #'man-follow))))
+
+(defun ace-link--man-collect ()
+  "Collect all visible links in `Man-mode'.
+
+There are two ways of following links interactively in
+`Man-mode':
+
+1. `push-button' (if there's a button overlay at point).
+2. `man-follow' (if there's no button at point).
+
+`man-follow' simply takes whatever text is at point and tries to
+follow it as a manual page.  This logic can't be used by
+`ace-link' since that would make every word a link.  However,
+we'd miss actual links by only collecting button overlays.
+
+The workaround for non-button links is to search for strings that
+looks like manpages with a regular expression."
+  (save-excursion
+    (let ((end (window-end))
+          (pt (window-start))
+          candidates)
+      (while (and (setq pt (next-property-change pt))
+                  (< pt end))
+        (let ((entry (Man-default-man-entry pt)))
+          (when (or (button-at pt)
+                    (and (text-properties-at pt)
+                         (string-match-p "^[^(]+([0-9]+)$" entry)))
+            (push (cons entry pt) candidates))))
+      (nreverse candidates))))
 
 ;;* `ace-link-woman'
 ;;;###autoload
