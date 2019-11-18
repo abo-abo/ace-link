@@ -224,6 +224,8 @@
         (push-button pt)
       (call-interactively #'man-follow))))
 
+(declare-function Man-default-man-entry "man")
+
 (defun ace-link--man-collect ()
   "Collect all visible links in `Man-mode'.
 
