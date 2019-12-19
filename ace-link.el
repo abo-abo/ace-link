@@ -835,7 +835,7 @@ looks like manpages with a regular expression."
                (avy--style-fn avy-style)))))
     (ace-link--cider-inspector-action pt)))
 
-(declare-function 'cider-inspector-operate-on-point "ext:cider")
+(declare-function cider-inspector-operate-on-point "ext:cider-inspector")
 
 (defun ace-link--cider-inspector-collect ()
   "Collect the positions of visible links in the current
