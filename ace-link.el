@@ -301,7 +301,7 @@ looks like manpages with a regular expression."
 
 (defun ace-link--eww-action (pt)
   (when (number-or-marker-p pt)
-    (goto-char (1+ pt))
+    (goto-char pt)
     (eww-follow-link)))
 
 (defun ace-link--eww-collect ()
