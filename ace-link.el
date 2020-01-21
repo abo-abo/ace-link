@@ -67,7 +67,7 @@
          (ace-link-gnus))
         ((eq major-mode 'mu4e-view-mode)
          (ace-link-mu4e))
-        ((memq major-mode '(org-mode erc-mode elfeed-show-mode term-mode))
+        ((memq major-mode '(org-mode erc-mode elfeed-show-mode term-mode vterm-mode))
          (ace-link-org))
         ((eq major-mode 'org-agenda-mode)
          (ace-link-org-agenda))
