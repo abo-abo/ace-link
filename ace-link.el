@@ -314,20 +314,28 @@ looks like manpages with a regular expression."
       (goto-char (point-min))
       (let (beg end candidates)
         (setq end
-              (if (get-text-property (point) 'help-echo)
+              (if (get-text-property (point) 'shr-url)
                   (point)
                 (text-property-any
-                 (point) (point-max) 'help-echo nil)))
+                 (point) (point-max) 'shr-url nil)))
         (while (setq beg (text-property-not-all
-                          end (point-max) 'help-echo nil))
+                          end (point-max) 'shr-url nil))
           (goto-char beg)
-          (setq end (text-property-any
-                     (point) (point-max) 'help-echo nil))
-          ;; When link at the end of buffer, end will be set to nil.
-          (if (eq end nil)
-              (setq end (point-max)))
-          (push (cons (buffer-substring-no-properties beg end) beg)
-                candidates))
+          ;; Skip leading newlines in the next link text.  They make things very
+          ;; ugly when running `ace-link-eww' since the characters to jump to
+          ;; each link will be displayed on the line before its visible text.
+          (skip-chars-forward "\n")
+          (setq beg (point))
+          ;; Handle the case where a link is all newlines by skipping them.
+          (if (get-text-property (point) 'shr-url)
+              (progn
+                (setq end (next-single-property-change (point) 'shr-url nil (point-max)))
+                ;; When link at the end of buffer, end will be set to nil.
+                (if (eq end nil)
+                    (setq end (point-max)))
+                (push (cons (buffer-substring-no-properties beg end) beg)
+                      candidates))
+            (setq end (point))))
         (nreverse candidates)))))
 
 ;;* `ace-link-w3m'
