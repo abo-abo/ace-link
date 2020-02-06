@@ -314,18 +314,19 @@ looks like manpages with a regular expression."
       (goto-char (point-min))
       (let (beg end candidates)
         (setq end
-              (if (get-text-property (point) 'help-echo)
+              (if (get-text-property (point) 'shr-url)
                   (point)
                 (text-property-any
-                 (point) (point-max) 'help-echo nil)))
+                 (point) (point-max) 'shr-url nil)))
         (while (setq beg (text-property-not-all
-                          end (point-max) 'help-echo nil))
+                          end (point-max) 'shr-url nil))
           (goto-char beg)
-          (setq end (text-property-any
-                     (point) (point-max) 'help-echo nil))
-          ;; When link at the end of buffer, end will be set to nil.
+          (setq end (next-single-property-change (point) 'shr-url nil (point-max)))
+          ;; When link at the end of buffer, end will be set to nil.  Otherwise,
+          ;; set end to the point right after the change.
           (if (eq end nil)
-              (setq end (point-max)))
+              (setq end (point-max))
+            (setq end (1+ end)))
           (push (cons (buffer-substring-no-properties beg end) beg)
                 candidates))
         (nreverse candidates)))))
