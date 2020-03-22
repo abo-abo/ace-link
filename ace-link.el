@@ -288,21 +288,25 @@ looks like manpages with a regular expression."
 
 ;;* `ace-link-eww'
 ;;;###autoload
-(defun ace-link-eww ()
-  "Open a visible link in an `eww-mode' buffer."
-  (interactive)
+(defun ace-link-eww (&optional external)
+  "Open a visible link in an `eww-mode' buffer.
+If EXTERNAL is single prefix, browse the URL using
+`browse-url-secondary-browser-function'.
+
+If EXTERNAL is double prefix, browse in new buffer."
+  (interactive "P")
   (let ((pt (avy-with ace-link-eww
               (avy-process
                (mapcar #'cdr (ace-link--eww-collect))
                (avy--style-fn avy-style)))))
-    (ace-link--eww-action pt)))
+    (ace-link--eww-action pt external)))
 
 (declare-function eww-follow-link "eww")
 
-(defun ace-link--eww-action (pt)
+(defun ace-link--eww-action (pt external)
   (when (number-or-marker-p pt)
     (goto-char pt)
-    (eww-follow-link)))
+    (eww-follow-link external)))
 
 (defun ace-link--eww-collect ()
   "Collect the positions of visible links in the current `eww' buffer."
