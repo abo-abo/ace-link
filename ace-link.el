@@ -460,11 +460,14 @@ Only consider the links in 'text/plain'."
           (push pt candidates))))
     (nreverse candidates)))
 
-(defun ace-link--email-view-next-link (pos)
-  "Find next link from POS in current email-view buffer."
+(defun ace-link--email-view-next-link (pos &optional mu4e)
+  "Find next link from POS in current email-view buffer.
+If MU4E is non-nil, or if the buffer is in `mu4e-view-mode', also
+consider mu4e’s links."
   (let* ((shr-link-pos (text-property-not-all pos (point-max) 'shr-url nil))
          (links (list (list 'shr-url shr-link-pos))))
-    (when (derived-mode-p 'mu4e-view-mode)
+    (when (or mu4e
+              (derived-mode-p 'mu4e-view-mode))
       (let ((mu4e-link-pos (text-property-not-all pos (point-max) 'mu4e-url nil))
             (mu4e-att-link-pos (text-property-not-all pos (point-max) 'mu4e-attnum nil)))
         (push (list 'mu4e-url mu4e-link-pos) links)
@@ -484,8 +487,10 @@ Only consider the links in 'text/plain'."
   (or (text-property-any (elt link 1) (point-max) (elt link 0) nil)
       (point-max)))
 
-(defun ace-link--email-view-html-collect ()
-  "Collect positions of visible links in the current email-view buffer."
+(defun ace-link--email-view-html-collect (&optional mu4e)
+  "Collect positions of visible links in the current email-view buffer.
+If MU4E is non-nil, or if the buffer is in `mu4e-view-mode', also
+consider mu4e’s links."
   (save-excursion
     (save-restriction
       (narrow-to-region
@@ -494,7 +499,7 @@ Only consider the links in 'text/plain'."
       (goto-char (point-min))
       (let (link pos candidates)
         (setq pos (point))
-        (while (setq link (ace-link--email-view-next-link pos))
+        (while (setq link (ace-link--email-view-next-link pos mu4e))
           (goto-char (elt link 1))
           (setq pos (ace-link--email-view-end-of-link link))
           (push (cons (buffer-substring-no-properties (elt link 1) pos) (elt link 1)) candidates))
@@ -509,7 +514,7 @@ Only consider the links in 'text/plain'."
       (ace-link-gnus)
     (let ((pt (avy-with ace-link-mu4e
                 (avy-process
-                 (mapcar #'cdr (ace-link--email-view-html-collect))
+                 (mapcar #'cdr (ace-link--email-view-html-collect t))
                  (avy--style-fn avy-style)))))
       (ace-link--mu4e-action pt))))
 
