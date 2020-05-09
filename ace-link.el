@@ -547,8 +547,9 @@ Only consider the 'text/plain' portion of the buffer."
 (defun ace-link--notmuch-plain-action (pt)
   "Open link at PT in a `notmuch-show' buffer.
 Only works in 'text/plain'"
-  (goto-char pt)
-  (browse-url-at-point))
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (browse-url-at-point)))
 
 ;;;###autoload
 (defun ace-link-notmuch-html ()
