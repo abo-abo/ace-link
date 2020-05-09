@@ -515,11 +515,12 @@ If EXTERNAL is double prefix, browse in new buffer."
   "Open a visible link in a `notmuch-show' buffer.
 Only consider the 'text/plain' portion of the buffer."
   (interactive)
-  (when-let ((pt (avy-with ace-link-notmuch-show-plain
-                   (avy-process
-                    (ace-link--notmuch-show-plain-collect)
-                    #'avy--overlay-pre))))
-    (ace-link--notmuch-show-plain-action pt)))
+  (let ((pt (avy-with ace-link-notmuch-show-plain
+              (avy-process
+               (ace-link--notmuch-show-plain-collect)
+               #'avy--overlay-pre))))
+    (when pt
+      (ace-link--notmuch-show-plain-action pt))))
 
 (defun ace-link--notmuch-show-plain-action (pt)
   "Open link at PT in a `notmuch-show' buffer.
@@ -603,13 +604,14 @@ Only works in 'text/html'"
   "Open a visible link in `notmuch-show' buffer.
 Consider both the links in 'text/plain' and 'text/html'."
   (interactive)
-  (when-let ((match (avy-with ace-link-notmuch-show
-                      (avy-process
-                       (ace-link--notmuch-collect)
-                       #'avy--overlay-pre))))
-    (let ((pt (car match))
-          (fn (cdr match)))
-      (funcall fn pt))))
+  (let ((match (avy-with ace-link-notmuch-show
+                 (avy-process
+                  (ace-link--notmuch-collect)
+                  #'avy--overlay-pre))))
+    (when match
+      (let ((pt (car match))
+            (fn (cdr match)))
+        (funcall fn pt)))))
 
 (defun ace-link--notmuch-collect ()
   "Collect the positions of visible links in `notmuch-show' buffer.
