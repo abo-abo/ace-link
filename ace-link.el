@@ -631,9 +631,9 @@ call at PT."
   (interactive)
   (require 'org)
   (let ((pt (avy-with ace-link-org
-              (avy-process
-               (mapcar #'cdr (ace-link--org-collect))
-               (avy--style-fn avy-style)))))
+               (avy-process
+                (mapcar #'cdr (ace-link--org-collect))
+                (avy--style-fn avy-style)))))
     (ace-link--org-action pt)))
 
 (declare-function org-open-at-point "org")
