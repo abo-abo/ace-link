@@ -1032,6 +1032,8 @@ call at PT."
     `(define-key xref--xref-buffer-mode-map ,key 'ace-link-xref))
   (eval-after-load "info"
     `(define-key Info-mode-map ,key 'ace-link-info))
+  (eval-after-load "notmuch"
+    `(define-key notmuch-show-mode-map ,key 'ace-link-notmuch-show))
   (eval-after-load "compile"
     `(define-key compilation-mode-map ,key 'ace-link-compilation))
   (eval-after-load "help-mode"
