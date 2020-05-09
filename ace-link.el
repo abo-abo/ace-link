@@ -462,12 +462,10 @@ Only consider the links in 'text/plain'."
 
 (defun ace-link--email-view-next-link (pos &optional mu4e)
   "Find next link from POS in current email-view buffer.
-If MU4E is non-nil, or if the buffer is in `mu4e-view-mode', also
-consider mu4e’s links."
+If MU4E is non-nil, also consider mu4e-links."
   (let* ((shr-link-pos (text-property-not-all pos (point-max) 'shr-url nil))
          (links (list (list 'shr-url shr-link-pos))))
-    (when (or mu4e
-              (derived-mode-p 'mu4e-view-mode))
+    (when mu4e
       (let ((mu4e-link-pos (text-property-not-all pos (point-max) 'mu4e-url nil))
             (mu4e-att-link-pos (text-property-not-all pos (point-max) 'mu4e-attnum nil)))
         (push (list 'mu4e-url mu4e-link-pos) links)
