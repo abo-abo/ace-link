@@ -1,6 +1,6 @@
-;;; ace-link.el --- Quickly follow links
+;;; ace-link.el --- Quickly follow links -*- lexical-binding: t -*-
 
-;; Copyright (C) 2014-2017 Oleh Krehel
+;; Copyright (C) 2014-2020 Oleh Krehel
 
 ;; Author: Oleh Krehel <ohwoeowho@gmail.com>
 ;; URL: https://github.com/abo-abo/ace-link
@@ -201,7 +201,7 @@
                   (while (re-search-forward "#\\([0-9]+\\)" end t)
                     (push (match-beginning 0) cands))
                   (nreverse cands))))
-         (pt (avy-with ace-link-commit
+         (_pt (avy-with ace-link-commit
                (avy-process pts)))
          (url (cl-reduce
                (lambda (a b)
