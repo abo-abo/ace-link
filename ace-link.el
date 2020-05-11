@@ -470,10 +470,10 @@ If MU4E is non-nil, also consider mu4e-links."
             (mu4e-att-link-pos (text-property-not-all pos (point-max) 'mu4e-attnum nil)))
         (push (list 'mu4e-url mu4e-link-pos) links)
         (push (list 'mu4e-attnum mu4e-att-link-pos) links)
-        (setq link (nreverse links))))
-    (setq links (cl-remove-if-not (lambda (link)
-                                    (elt link 1))
-                                  links))
+        (setq links (nreverse links))))
+    (setq links (cl-remove-if-not
+                 (lambda (link) (nth 1 link))
+                 links))
     (if links
         (car
          (sort links (lambda (x y)
