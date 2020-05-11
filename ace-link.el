@@ -612,7 +612,7 @@ call at PT."
 
 (declare-function org-open-at-point "org")
 (declare-function outline-invisible-p "outline")
-(defvar org-any-link-re)
+(defvar org-any-re)
 
 (defun ace-link--org-action (pt)
   (when (numberp pt)
@@ -624,7 +624,7 @@ call at PT."
         res)
     (save-excursion
       (goto-char (window-start))
-      (while (re-search-forward org-any-link-re end t)
+      (while (re-search-forward org-any-re end t)
         ;; Check that the link is visible. Look at the last character
         ;; position in the link ("...X]]") to cover links with and
         ;; without a description.
