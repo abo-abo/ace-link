@@ -49,7 +49,8 @@
   (interactive)
   (cond ((eq major-mode 'Info-mode)
          (ace-link-info))
-        ((member major-mode '(help-mode package-menu-mode geiser-doc-mode elbank-report-mode
+        ((member major-mode '(help-mode
+                              package-menu-mode geiser-doc-mode elbank-report-mode
                               elbank-overview-mode slime-trace-dialog-mode helpful-mode))
          (ace-link-help))
         ((eq major-mode 'Man-mode)
@@ -69,7 +70,9 @@
          (ace-link-mu4e))
         ((eq major-mode 'notmuch-show-mode)
          (ace-link-notmuch))
-        ((memq major-mode '(org-mode erc-mode elfeed-show-mode term-mode vterm-mode))
+        ((memq major-mode '(org-mode
+                            erc-mode elfeed-show-mode
+                            term-mode vterm-mode eshell-mode))
          (ace-link-org))
         ((eq major-mode 'org-agenda-mode)
          (ace-link-org-agenda))
