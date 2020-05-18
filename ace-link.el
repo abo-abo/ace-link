@@ -72,7 +72,9 @@
          (ace-link-notmuch))
         ((memq major-mode '(org-mode
                             erc-mode elfeed-show-mode
-                            term-mode vterm-mode eshell-mode))
+                            term-mode vterm-mode
+                            eshell-mode
+                            telega-chat-mode))
          (ace-link-org))
         ((eq major-mode 'org-agenda-mode)
          (ace-link-org-agenda))
