@@ -413,13 +413,14 @@ If EXTERNAL is double prefix, browse in new buffer."
 (defun ace-link-gnus ()
   "Open a visible link in a `gnus-article-mode' buffer."
   (interactive)
-  (when (eq major-mode 'gnus-summary-mode)
-    (gnus-summary-widget-forward 1))
-  (let ((pt (avy-with ace-link-gnus
-              (avy-process
-               (ace-link--gnus-collect)
-               (avy--style-fn avy-style)))))
-    (ace-link--gnus-action pt)))
+  (save-selected-window
+    (when (eq major-mode 'gnus-summary-mode)
+      (gnus-summary-widget-forward 1))
+    (let ((pt (avy-with ace-link-gnus
+                (avy-process
+                 (ace-link--gnus-collect)
+                 (avy--style-fn avy-style)))))
+      (ace-link--gnus-action pt))))
 
 (defun ace-link--gnus-action (pt)
   (when (number-or-marker-p pt)
