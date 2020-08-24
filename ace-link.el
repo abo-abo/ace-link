@@ -64,7 +64,7 @@
         ((or (member major-mode '(compilation-mode grep-mode))
              (bound-and-true-p compilation-shell-minor-mode))
          (ace-link-compilation))
-        ((eq major-mode 'gnus-article-mode)
+        ((memq major-mode '(gnus-article-mode gnus-summary-mode))
          (ace-link-gnus))
         ((eq major-mode 'mu4e-view-mode)
          (ace-link-mu4e))
