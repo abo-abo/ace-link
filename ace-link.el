@@ -415,7 +415,11 @@ If EXTERNAL is double prefix, browse in new buffer."
   (interactive)
   (save-selected-window
     (when (eq major-mode 'gnus-summary-mode)
-      (gnus-summary-widget-forward 1))
+      (if-let ((win (gnus-get-buffer-window gnus-article-buffer 'visible)))
+          (progn
+            (select-window win)
+            (select-frame-set-input-focus (window-frame win)))
+        (user-error "No article window found")))
     (let ((pt (avy-with ace-link-gnus
                 (avy-process
                  (ace-link--gnus-collect)
