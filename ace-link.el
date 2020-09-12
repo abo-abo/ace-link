@@ -425,30 +425,35 @@ If EXTERNAL is double prefix, browse in new buffer."
 (defun ace-link--gnus-action (pt)
   (when (number-or-marker-p pt)
     (goto-char (1+ pt))
-    (widget-button-press (point))))
-
-(declare-function widget-forward "wid-edit")
-(declare-function gnus-summary-widget-forward "gnus-sum")
-(declare-function widget-button-press "wid-edit")
+    (cond ((< emacs-major-version 27)
+           (widget-button-press (point)))
+          ((and (eq mm-text-html-renderer 'shr)
+             (get-text-property (point) 'shr-url))
+           (shr-browse-url))
+          ((get-text-property (point) 'gnus-callback)
+           (gnus-article-press-button))
+          (t (push-button)))))
 
 (defun ace-link--gnus-collect ()
   "Collect the positions of visible links in the current gnus buffer."
-  (require 'wid-edit)
-  (let (candidates pt)
-    (save-excursion
-      (save-restriction
-        (narrow-to-region
-         (window-start)
-         (window-end))
-        (goto-char (point-min))
-        (setq pt (point))
-        (while (progn (widget-forward 1)
-                      (> (point) pt))
+  (if (<= 27 emacs-major-version)
+      (mapcar #'cdr (ace-link--woman-collect))
+    (require 'wid-edit)
+    (let (candidates pt)
+      (save-excursion
+        (save-restriction
+          (narrow-to-region
+           (window-start)
+           (window-end))
+          (goto-char (point-min))
           (setq pt (point))
-          (when (or (plist-get (text-properties-at (point)) 'gnus-string)
-                    (plist-get (text-properties-at (point)) 'shr-url))
-            (push (point) candidates)))
-        (nreverse candidates)))))
+          (while (progn (widget-forward 1)
+                        (> (point) pt))
+            (setq pt (point))
+            (when (or (plist-get (text-properties-at (point)) 'gnus-string)
+                      (plist-get (text-properties-at (point)) 'shr-url))
+              (push (point) candidates)))
+          (nreverse candidates))))))
 
 ;;* Helper functions for `ace-link-mu4e' and `ace-link-notmuch'
 (defun ace-link--email-view-plain-collect ()
