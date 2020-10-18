@@ -315,8 +315,10 @@ If EXTERNAL is double prefix, browse in new buffer."
     (goto-char pt)
     (eww-follow-link external)))
 
-(defun ace-link--eww-collect ()
+(defun ace-link--eww-collect (&optional property)
   "Collect the positions of visible links in the current `eww' buffer."
+  (unless property
+    (setq property 'shr-url))
   (save-excursion
     (save-restriction
       (narrow-to-region
@@ -325,12 +327,12 @@ If EXTERNAL is double prefix, browse in new buffer."
       (goto-char (point-min))
       (let (beg end candidates)
         (setq end
-              (if (get-text-property (point) 'shr-url)
+              (if (get-text-property (point) property)
                   (point)
                 (text-property-any
-                 (point) (point-max) 'shr-url nil)))
+                 (point) (point-max) property nil)))
         (while (setq beg (text-property-not-all
-                          end (point-max) 'shr-url nil))
+                          end (point-max) property nil))
           (goto-char beg)
           ;; Skip leading newlines in the next link text.  They make things very
           ;; ugly when running `ace-link-eww' since the characters to jump to
@@ -338,9 +340,9 @@ If EXTERNAL is double prefix, browse in new buffer."
           (skip-chars-forward "\n")
           (setq beg (point))
           ;; Handle the case where a link is all newlines by skipping them.
-          (if (get-text-property (point) 'shr-url)
+          (if (get-text-property (point) property)
               (progn
-                (setq end (next-single-property-change (point) 'shr-url nil (point-max)))
+                (setq end (next-single-property-change (point) property nil (point-max)))
                 ;; When link at the end of buffer, end will be set to nil.
                 (if (eq end nil)
                     (setq end (point-max)))
@@ -397,7 +399,7 @@ If EXTERNAL is double prefix, browse in new buffer."
   (interactive)
   (let ((pt (avy-with ace-link-compilation
               (avy-process
-               (mapcar #'cdr (ace-link--eww-collect))
+               (mapcar #'cdr (ace-link--eww-collect 'help-echo))
                (avy--style-fn avy-style)))))
     (ace-link--compilation-action pt)))
 
