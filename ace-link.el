@@ -411,6 +411,13 @@ If EXTERNAL is double prefix, browse in new buffer."
 (declare-function compile-goto-error "compile")
 
 ;;* `ace-link-gnus'
+(defvar gnus-article-buffer)
+(defvar mm-text-html-renderer)
+(declare-function gnus-article-press-button "gnus-art")
+(declare-function gnus-get-buffer-window "gnus-win")
+(declare-function widget-button-press "wid-edit")
+(declare-function widget-forward "wid-edit")
+
 ;;;###autoload
 (defun ace-link-gnus ()
   "Open a visible link in a `gnus-article-mode' buffer."
