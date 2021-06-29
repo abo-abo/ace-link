@@ -94,6 +94,8 @@
          (ace-link-commit))
         ((eq major-mode 'cider-inspector-mode)
          (ace-link-cider-inspector))
+        ((derived-mode-p 'xref--xref-buffer-mode)
+         (ace-link-xref))
         ((and ace-link-fallback-function
               (funcall ace-link-fallback-function)))
         (t
