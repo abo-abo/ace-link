@@ -57,7 +57,7 @@
          (ace-link-man))
         ((eq major-mode 'woman-mode)
          (ace-link-woman))
-        ((eq major-mode 'eww-mode)
+        ((memq major-mode '(eww-mode elfeed-show-mode))
          (ace-link-eww))
         ((eq major-mode 'w3m-mode)
          (ace-link-w3m))
@@ -71,7 +71,7 @@
         ((eq major-mode 'notmuch-show-mode)
          (ace-link-notmuch))
         ((memq major-mode '(org-mode
-                            erc-mode elfeed-show-mode
+                            erc-mode
                             term-mode vterm-mode
                             eshell-mode
                             telega-chat-mode))
