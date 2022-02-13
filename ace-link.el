@@ -43,63 +43,68 @@
 (defvar ace-link-fallback-function nil
   "When non-nil, called by `ace-link' when `major-mode' isn't recognized.")
 
+(defvar ace-link-major-mode-actions
+  `((Info-mode                   . ace-link-info)
+    (Man-mode                    . ace-link-man)
+    (woman-mode                  . ace-link-woman)
+    (eww-mode                    . ace-link-eww)
+    (w3m-mode                    . ace-link-w3m)
+    (mu4e-view-mode              . ace-link-mu4e)
+    (notmuch-show-mode           . ace-link-notmuch)
+    (Custom-mode                 . ace-link-custom)
+    (sldb-mode                   . ace-link-sldb)
+    (slime-xref-mode             . ace-link-slime-xref)
+    (slime-inspector-mode        . ace-link-slime-inspector)
+    (indium-inspector-mode       . ace-link-indium-inspector)
+    (indium-debugger-frames-mode . ace-link-indium-debugger-frames)
+    (magit-commit-mode           . ace-link-commit)
+    (cider-inspector-mode        . ace-link-cider-inspector)
+    (org-agenda-mode             . ace-link-org-agenda)
+    ,@(mapcar (lambda (m) (cons m 'ace-link-help))
+              '(help-mode
+                package-menu-mode
+                geiser-doc-mode
+                elbank-report-mode
+                elbank-overview-mode
+                slime-trace-dialog-mode
+                helpful-mode))
+    ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
+              '(compilation-mode
+                grep-mode))
+    ,@(mapcar (lambda (m) (cons m 'ace-link-gnus))
+              '(gnus-article-mode
+                gnus-summary-mode))
+    ,@(mapcar (lambda (m) (cons m 'ace-link-org))
+              '(org-mode
+                erc-mode elfeed-show-mode
+                term-mode vterm-mode
+                eshell-mode
+                telega-chat-mode)))
+  "Mapping of `major-mode' to ace-link actions.")
+
+(defvar ace-link-minor-mode-actions
+  '((compilation-shell-minor-mode . ace-link-compilation))
+  "Mapping of minor modes to ace-link actions.")
+
+(defun ace-link-action (&optional buffer)
+  "Return action associated with current buffer, if any."
+  (or (cdr (assoc major-mode ace-link-major-mode-actions))
+      (cl-some (lambda (action)
+                 (and (boundp (car action))
+                      (buffer-local-value
+                       (car action) (or buffer (current-buffer)))
+                      (cdr action)))
+               ace-link-minor-mode-actions)))
+
 ;;;###autoload
 (defun ace-link ()
   "Call the ace link function for the current `major-mode'"
   (interactive)
-  (cond ((eq major-mode 'Info-mode)
-         (ace-link-info))
-        ((member major-mode '(help-mode
-                              package-menu-mode geiser-doc-mode elbank-report-mode
-                              elbank-overview-mode slime-trace-dialog-mode helpful-mode))
-         (ace-link-help))
-        ((eq major-mode 'Man-mode)
-         (ace-link-man))
-        ((eq major-mode 'woman-mode)
-         (ace-link-woman))
-        ((eq major-mode 'eww-mode)
-         (ace-link-eww))
-        ((eq major-mode 'w3m-mode)
-         (ace-link-w3m))
-        ((or (member major-mode '(compilation-mode grep-mode))
-             (bound-and-true-p compilation-shell-minor-mode))
-         (ace-link-compilation))
-        ((memq major-mode '(gnus-article-mode gnus-summary-mode))
-         (ace-link-gnus))
-        ((eq major-mode 'mu4e-view-mode)
-         (ace-link-mu4e))
-        ((eq major-mode 'notmuch-show-mode)
-         (ace-link-notmuch))
-        ((memq major-mode '(org-mode
-                            erc-mode elfeed-show-mode
-                            term-mode vterm-mode
-                            eshell-mode
-                            telega-chat-mode))
-         (ace-link-org))
-        ((eq major-mode 'org-agenda-mode)
-         (ace-link-org-agenda))
-        ((eq major-mode 'Custom-mode)
-         (ace-link-custom))
-        ((eq major-mode 'sldb-mode)
-         (ace-link-sldb))
-        ((eq major-mode 'slime-xref-mode)
-         (ace-link-slime-xref))
-        ((eq major-mode 'slime-inspector-mode)
-         (ace-link-slime-inspector))
-        ((eq major-mode 'indium-inspector-mode)
-         (ace-link-indium-inspector))
-        ((eq major-mode 'indium-debugger-frames-mode)
-         (ace-link-indium-debugger-frames))
-        ((eq major-mode 'magit-commit-mode)
-         (ace-link-commit))
-        ((eq major-mode 'cider-inspector-mode)
-         (ace-link-cider-inspector))
-        ((and ace-link-fallback-function
-              (funcall ace-link-fallback-function)))
-        (t
-         (error
-          "%S isn't supported"
-          major-mode))))
+  (if-let ((action (ace-link-action (current-buffer))))
+      (funcall action)
+    (unless (and ace-link-fallback-function
+                 (funcall ace-link-fallback-function))
+      (error "%S isn't supported" major-mode))))
 
 ;;* `ace-link-info'
 ;;;###autoload
