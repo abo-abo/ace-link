@@ -43,64 +43,55 @@
 (defvar ace-link-fallback-function nil
   "When non-nil, called by `ace-link' when `major-mode' isn't recognized.")
 
+(defvar ace-link-minor-mode-actions
+  '((ace-link-compilation compilation-shell-minor-mode))
+  "Mapping of minor modes to ace-link actions.")
+
+(defvar ace-link-major-mode-actions
+  '((ace-link-org org-mode erc-mode elfeed-show-mode term-mode vterm-mode eshell-mode telega-chat-mode org-roam-mode)
+    (ace-link-org-agenda org-agenda-mode)
+    (ace-link-info Info-mode)
+    (ace-link-help help-mode package-menu-mode geiser-doc-mode elbank-report-mode elbank-overview-mode slime-trace-dialog-mode helpful-mode)
+    (ace-link-man Man-mode)
+    (ace-link-woman woman-mode)
+    (ace-link-eww eww-mode)
+    (ace-link-w3m w3m-mode)
+    (ace-link-compilation compilation-mode grep-mode)
+    (ace-link-gnus gnus-article-mode gnus-summary-mode)
+    (ace-link-mu4e mu4e-view-mode)
+    (ace-link-notmuch notmuch-show-mode)
+    (ace-link-custom Custom-mode)
+    (ace-link-sldb sldb-mode)
+    (ace-link-slime-xref slime-xref-mode)
+    (ace-link-slime-inspector slime-inspector-mode)
+    (ace-link-indium-inspector indium-inspector-mode)
+    (ace-link-indium-debugger-frames indium-debugger-frames-mode)
+    (ace-link-commit magit-commit-mode)
+    (ace-link-cider-inspector cider-inspector-mode))
+  "Reverse mapping of `major-mode' to ace-link actions.")
+
 ;;;###autoload
 (defun ace-link ()
   "Call the ace link function for the current `major-mode'"
   (interactive)
-  (cond ((eq major-mode 'Info-mode)
-         (ace-link-info))
-        ((member major-mode '(help-mode
-                              package-menu-mode geiser-doc-mode elbank-report-mode
-                              elbank-overview-mode slime-trace-dialog-mode helpful-mode))
-         (ace-link-help))
-        ((eq major-mode 'Man-mode)
-         (ace-link-man))
-        ((eq major-mode 'woman-mode)
-         (ace-link-woman))
-        ((eq major-mode 'eww-mode)
-         (ace-link-eww))
-        ((eq major-mode 'w3m-mode)
-         (ace-link-w3m))
-        ((or (member major-mode '(compilation-mode grep-mode))
-             (bound-and-true-p compilation-shell-minor-mode))
-         (ace-link-compilation))
-        ((memq major-mode '(gnus-article-mode gnus-summary-mode))
-         (ace-link-gnus))
-        ((eq major-mode 'mu4e-view-mode)
-         (ace-link-mu4e))
-        ((eq major-mode 'notmuch-show-mode)
-         (ace-link-notmuch))
-        ((memq major-mode '(org-mode
-                            erc-mode elfeed-show-mode
-                            term-mode vterm-mode
-                            eshell-mode
-                            telega-chat-mode
-                            org-roam-mode))
-         (ace-link-org))
-        ((eq major-mode 'org-agenda-mode)
-         (ace-link-org-agenda))
-        ((eq major-mode 'Custom-mode)
-         (ace-link-custom))
-        ((eq major-mode 'sldb-mode)
-         (ace-link-sldb))
-        ((eq major-mode 'slime-xref-mode)
-         (ace-link-slime-xref))
-        ((eq major-mode 'slime-inspector-mode)
-         (ace-link-slime-inspector))
-        ((eq major-mode 'indium-inspector-mode)
-         (ace-link-indium-inspector))
-        ((eq major-mode 'indium-debugger-frames-mode)
-         (ace-link-indium-debugger-frames))
-        ((eq major-mode 'magit-commit-mode)
-         (ace-link-commit))
-        ((eq major-mode 'cider-inspector-mode)
-         (ace-link-cider-inspector))
-        ((and ace-link-fallback-function
-              (funcall ace-link-fallback-function)))
-        (t
-         (error
-          "%S isn't supported"
-          major-mode))))
+  (let (action)
+    (cond ((setq action
+                 (cl-find-if
+                  (lambda (c) (memq major-mode c))
+                  ace-link-major-mode-actions))
+           (funcall (car action)))
+          ((setq action
+                 (cl-find-if
+                  (lambda (c)
+                    (cl-some (lambda (minor-mode) (bound-and-true-p minor-mode))
+                             (cdr c)))
+                  ace-link-minor-mode-actions))
+           (funcall (car action)))
+          ((and ace-link-fallback-function
+                (funcall ace-link-fallback-function)))
+          (t
+           (error "%S isn't supported" major-mode)))))
+
 
 ;;* `ace-link-info'
 ;;;###autoload
