@@ -252,7 +252,7 @@ we'd miss actual links by only collecting button overlays.
 The workaround for non-button links is to search for strings that
 looks like manpages with a regular expression."
   (save-excursion
-    (let ((end (window-end))
+    (let ((end (window-end nil t))
           (pt (window-start))
           candidates)
       (while (and (setq pt (next-property-change pt))
