@@ -140,7 +140,7 @@
 
 (defun ace-link--info-collect ()
   "Collect the positions of visible links in the current `Info-mode' buffer."
-  (let ((end (window-end))
+  (let ((end (window-end (selected-window) t))
         points)
     (save-excursion
       (goto-char (window-start))
@@ -172,7 +172,7 @@
 (defun ace-link--help-collect ()
   "Collect the positions of visible links in the current `help-mode' buffer."
   (let ((skip (text-property-any
-               (window-start) (window-end) 'button nil))
+               (window-start) (window-end (selected-window) t) 'button nil))
         candidates)
     (save-excursion
       (while (setq skip (text-property-not-all
@@ -252,7 +252,7 @@ we'd miss actual links by only collecting button overlays.
 The workaround for non-button links is to search for strings that
 looks like manpages with a regular expression."
   (save-excursion
-    (let ((end (window-end nil t))
+    (let ((end (window-end (selected-window) t))
           (pt (window-start))
           candidates)
       (while (and (setq pt (next-property-change pt))
@@ -282,7 +282,7 @@ looks like manpages with a regular expression."
 
 (defun ace-link--woman-collect ()
   "Collect all links visible in the current `woman-mode' buffer."
-  (let ((end (window-end))
+  (let ((end (window-end (selected-window) t))
         candidates)
     (save-excursion
       (goto-char (window-start))
@@ -323,7 +323,7 @@ If EXTERNAL is double prefix, browse in new buffer."
     (save-restriction
       (narrow-to-region
        (window-start)
-       (window-end))
+       (window-end (selected-window) t))
       (goto-char (point-min))
       (let (beg end candidates)
         (setq end
@@ -376,7 +376,7 @@ If EXTERNAL is double prefix, browse in new buffer."
     (save-restriction
       (narrow-to-region
        (window-start)
-       (window-end))
+       (window-end (selected-window) t))
       (goto-char (point-min))
       (let ((anchor-prop 'w3m-anchor-sequence)
             (beg (point))
@@ -457,7 +457,7 @@ If EXTERNAL is double prefix, browse in new buffer."
         (save-restriction
           (narrow-to-region
            (window-start)
-           (window-end))
+           (window-end (selected-window) t))
           (goto-char (point-min))
           (setq pt (point))
           (while (progn (widget-forward 1)
@@ -477,7 +477,7 @@ Only consider the links in 'text/plain'."
       (save-restriction
         (narrow-to-region
          (window-start)
-         (window-end))
+         (window-end (selected-window) t))
         (goto-char (point-min))
         (while (re-search-forward "https?://" nil t)
           (setq pt (- (point) (length (match-string 0))))
@@ -517,7 +517,7 @@ consider mu4e’s links."
     (save-restriction
       (narrow-to-region
        (window-start)
-       (window-end))
+       (window-end (selected-window) t))
       (goto-char (point-min))
       (let (link pos candidates)
         (setq pos (point))
@@ -644,7 +644,7 @@ call at PT."
     (org-open-at-point)))
 
 (defun ace-link--org-collect ()
-  (let ((end (window-end))
+  (let ((end (window-end (selected-window) t))
         res)
     (save-excursion
       (goto-char (window-start))
@@ -683,7 +683,7 @@ call at PT."
 
 (defun ace-link--org-agenda-collect ()
   (let ((skip (text-property-any
-               (window-start) (window-end) 'org-marker nil))
+               (window-start) (window-end (selected-window) t) 'org-marker nil))
         candidates)
     (save-excursion
       (while (setq skip (text-property-not-all
@@ -714,7 +714,7 @@ call at PT."
 
 (defun ace-link--xref-collect ()
   (let ((skip (text-property-any
-               (window-start) (window-end) 'xref-item nil))
+               (window-start) (window-end (selected-window) t) 'xref-item nil))
         candidates)
     (save-excursion
       (while (setq skip (text-property-not-all
@@ -749,7 +749,7 @@ call at PT."
       (save-restriction
         (narrow-to-region
          (window-start)
-         (window-end))
+         (window-end (selected-window) t))
         (goto-char (point-min))
         (setq pt (point))
         (while (progn (widget-forward 1)
@@ -777,7 +777,8 @@ call at PT."
 
 (defun ace-link--addr-collect ()
   (let (candidates)
-    (dolist (overlay (overlays-in (window-start) (window-end)))
+    (dolist (overlay (overlays-in (window-start)
+                                  (window-end (selected-window) t)))
       (if (overlay-get overlay 'goto-address)
           (push (overlay-start overlay) candidates)))
     (nreverse candidates)))
@@ -810,7 +811,7 @@ call at PT."
         (var-face 'sldb-local-value-face))
     (save-excursion
       (goto-char (window-start))
-      (while (< (point) (window-end))
+      (while (< (point) (window-end (selected-window) t))
         (when (get-text-property (point) frame-prop)
           (if (get-text-property (point) 'var)
               (push (text-property-any
@@ -846,7 +847,7 @@ call at PT."
   (let ((candidates (list))
         (prop 'slime-location)
         (pt (window-start)))
-    (while (and pt (< pt (window-end)))
+    (while (and pt (< pt (window-end (selected-window) t)))
       (when (get-text-property pt prop)
         (push pt candidates))
       (setq pt (next-single-property-change pt prop)))
@@ -881,7 +882,7 @@ call at PT."
         (range 'slime-range-button)
         (action 'slime-action-number)
         (pt (window-start)))
-    (while (and pt (< pt (window-end)))
+    (while (and pt (< pt (window-end (selected-window) t)))
       (when (or (get-text-property pt part)
                 (get-text-property pt range)
                 (get-text-property pt action))
@@ -967,7 +968,7 @@ call at PT."
 (defun ace-link--cider-inspector-collect ()
   "Collect the positions of visible links in the current
 `cider-inspector-mode' buffer."
-  (let ((end (window-end))
+  (let ((end (window-end (selected-window) t))
         points)
     (save-excursion
       (goto-char (window-start))
