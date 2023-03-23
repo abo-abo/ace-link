@@ -532,13 +532,13 @@ consider mu4e’s links."
 (defun ace-link-mu4e ()
   "Open a visible link in an `mu4e-view-mode' buffer."
   (interactive)
-  (if (bound-and-true-p mu4e-view-use-gnus)
-      (ace-link-gnus)
-    (let ((pt (avy-with ace-link-mu4e
-                (avy-process
-                 (mapcar #'cdr (ace-link--email-view-html-collect t))
-                 (avy--style-fn avy-style)))))
-      (ace-link--mu4e-action pt))))
+  (if (bound-and-true-p mu4e-view-use-old)
+      (let ((pt (avy-with ace-link-mu4e
+                  (avy-process
+                   (mapcar #'cdr (ace-link--email-view-html-collect t))
+                   (avy--style-fn avy-style)))))
+        (ace-link--mu4e-action pt))
+    (ace-link-gnus)))
 
 (declare-function shr-browse-url "shr")
 (declare-function mu4e~view-browse-url-from-binding "ext:mu4e-view")
