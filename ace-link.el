@@ -70,6 +70,8 @@
          (ace-link-mu4e))
         ((eq major-mode 'notmuch-show-mode)
          (ace-link-notmuch))
+        ((eq major-mode 'notmuch-hello-mode)
+         (ace-link-widget))
         ((memq major-mode '(org-mode
                             erc-mode elfeed-show-mode
                             term-mode vterm-mode
@@ -622,6 +624,40 @@ call at PT."
              (cons (cdr x) #'ace-link--notmuch-html-action))
            (ace-link--email-view-html-collect))))
 
+;;* `ace-link-widget'
+;;;###autoload
+(defun ace-link-widget ()
+  "Open or go to a visible widget."
+  (interactive)
+  (let ((pt (avy-with ace-link-widget
+              (avy-process
+               (ace-link--widget-collect)
+               (avy--style-fn avy-style)))))
+    (ace-link--widget-action pt)))
+
+(defun ace-link--widget-action (pt)
+  (when (number-or-marker-p pt)
+    (goto-char pt)
+    (let ((button (get-char-property pt 'button)))
+      (when button
+	(widget-apply-action button)))))
+
+(defun ace-link--widget-collect ()
+  "Collect the positions of visible widgets in current buffer."
+  (let (candidates pt)
+    (save-excursion
+      (save-restriction
+        (narrow-to-region
+         (window-start)
+         (window-end))
+        (goto-char (point-min))
+        (setq pt (point))
+        (while (progn (widget-forward 1)
+                      (> (point) pt))
+          (setq pt (point))
+          (push (point) candidates))))
+    (nreverse candidates)))
+
 ;;* `ace-link-org'
 ;;;###autoload
 (defun ace-link-org ()
@@ -1011,6 +1047,8 @@ call at PT."
   (add-to-list 'avy-styles-alist
                '(ace-link-mu4e . post))
   (add-to-list 'avy-styles-alist
+               '(ace-link-widget . pre))
+  (add-to-list 'avy-styles-alist
                '(ace-link-org . pre))
   (add-to-list 'avy-styles-alist
                '(ace-link-org-agenda . pre))
@@ -1031,7 +1069,8 @@ call at PT."
   (eval-after-load "info"
     `(define-key Info-mode-map ,key 'ace-link-info))
   (eval-after-load "notmuch"
-    `(define-key notmuch-show-mode-map ,key 'ace-link-notmuch))
+    `(define-key notmuch-show-mode-map ,key 'ace-link-notmuch)
+    `(define-key notmuch-hello-mode-map ,key 'ace-link-widget))
   (eval-after-load "compile"
     `(define-key compilation-mode-map ,key 'ace-link-compilation))
   (eval-after-load "help-mode"
