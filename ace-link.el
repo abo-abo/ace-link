@@ -90,8 +90,6 @@
          (ace-link-indium-inspector))
         ((eq major-mode 'indium-debugger-frames-mode)
          (ace-link-indium-debugger-frames))
-        ((eq major-mode 'magit-commit-mode)
-         (ace-link-commit))
         ((eq major-mode 'cider-inspector-mode)
          (ace-link-cider-inspector))
         ((and ace-link-fallback-function
@@ -182,38 +180,6 @@
         (setq skip (text-property-any (point) (window-end)
                                       'button nil))))
     (nreverse candidates)))
-
-;;* `ace-link-commit'
-(defvar ivy-ffap-url-functions)
-(defvar ffap-url-fetcher)
-(declare-function magit-goto-next-section "ext:magit")
-(declare-function magit-current-section "ext:magit")
-(declare-function magit-section-end "ext:magit")
-
-(defun ace-link-commit ()
-  "Open an issue link in the browser."
-  (interactive)
-  (require 'counsel)
-  (require 'ffap)
-  (let* ((pts (save-excursion
-                (goto-char (point-min))
-                (when (eq major-mode 'magit-commit-mode)
-                  (magit-goto-next-section))
-                (let ((cands nil)
-                      (end (if (eq major-mode 'magit-commit-mode)
-                               (magit-section-end (magit-current-section))
-                             (point-max))))
-                  (while (re-search-forward "#\\([0-9]+\\)" end t)
-                    (push (match-beginning 0) cands))
-                  (nreverse cands))))
-         (_pt (avy-with ace-link-commit
-               (avy-process pts)))
-         (url (cl-reduce
-               (lambda (a b)
-                 (or a (funcall b)))
-               ivy-ffap-url-functions
-               :initial-value nil)))
-    (funcall ffap-url-fetcher url)))
 
 ;;* `ace-link-man'
 ;;;###autoload
