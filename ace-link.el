@@ -107,12 +107,11 @@
 (defun ace-link-info ()
   "Open a visible link in an `Info-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-info
-              (avy-process
-               (mapcar #'cdr
-                       (ace-link--info-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--info-action pt)))
+  (avy-with ace-link-info
+    (setq avy-action #'ace-link--info-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--info-collect))
+     (avy--style-fn avy-style))))
 
 (defun ace-link--info-action (pt)
   (when (numberp pt)
@@ -159,11 +158,11 @@
 (defun ace-link-help ()
   "Open a visible link in a `help-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-help
-              (avy-process
-               (mapcar #'cdr (ace-link--help-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--help-action pt)))
+  (avy-with ace-link-help
+    (setq avy-action #'ace-link--help-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--help-collect))
+     (avy--style-fn avy-style))))
 
 (defun ace-link--help-action (pt)
   (when (numberp pt)
@@ -196,36 +195,43 @@
   (interactive)
   (require 'counsel)
   (require 'ffap)
-  (let* ((pts (save-excursion
-                (goto-char (point-min))
-                (when (eq major-mode 'magit-commit-mode)
-                  (magit-goto-next-section))
-                (let ((cands nil)
-                      (end (if (eq major-mode 'magit-commit-mode)
-                               (magit-section-end (magit-current-section))
-                             (point-max))))
-                  (while (re-search-forward "#\\([0-9]+\\)" end t)
-                    (push (match-beginning 0) cands))
-                  (nreverse cands))))
-         (_pt (avy-with ace-link-commit
-               (avy-process pts)))
-         (url (cl-reduce
-               (lambda (a b)
-                 (or a (funcall b)))
-               ivy-ffap-url-functions
-               :initial-value nil)))
-    (funcall ffap-url-fetcher url)))
+  (avy-with ace-link-commit
+    (setq avy-action #'ace-link--commit-action)
+    (avy-process (ace-link--commit-collect))))
+
+(defun ace-link--commit-collect ()
+  (save-excursion
+    (goto-char (point-min))
+    (when (eq major-mode 'magit-commit-mode)
+      (magit-goto-next-section))
+    (let ((cands nil)
+          (end (if (eq major-mode 'magit-commit-mode)
+                   (magit-section-end (magit-current-section))
+                 (point-max))))
+      (while (re-search-forward "#\\([0-9]+\\)" end t)
+        (push (match-beginning 0) cands))
+      (nreverse cands))))
+
+(defun ace-link--commit-action (pt)
+  (save-excursion
+    (setf (point) pt)
+    (when-let ((url (cl-reduce
+                     (lambda (a b)
+                       (or a (funcall b)))
+                     ivy-ffap-url-functions
+                     :initial-value nil)))
+      (funcall ffap-url-fetcher url))))
 
 ;;* `ace-link-man'
 ;;;###autoload
 (defun ace-link-man ()
   "Open a visible link in a `man' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-man
-              (avy-process
-               (mapcar #'cdr (ace-link--man-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--man-action pt)))
+  (avy-with ace-link-man
+    (setq avy-action #'ace-link--man-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--man-collect))
+     (avy--style-fn avy-style))))
 
 (defun ace-link--man-action (pt)
   (when (number-or-marker-p pt)
@@ -270,11 +276,11 @@ looks like manpages with a regular expression."
 (defun ace-link-woman ()
   "Open a visible link in a `woman-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-woman
-              (avy-process
-               (mapcar #'cdr (ace-link--woman-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--woman-action pt)))
+  (avy-with ace-link-woman
+    (setq avy-action #'ace-link--woman-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--woman-collect))
+     (avy--style-fn avy-style))))
 
 (defun ace-link--woman-action (pt)
   (when (number-or-marker-p pt)
@@ -303,11 +309,11 @@ If EXTERNAL is single prefix, browse the URL using
 
 If EXTERNAL is double prefix, browse in new buffer."
   (interactive "P")
-  (let ((pt (avy-with ace-link-eww
-              (avy-process
-               (mapcar #'cdr (ace-link--eww-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--eww-action pt external)))
+  (avy-with ace-link-eww
+    (setq avy-action (lambda (pt) (ace-link--eww-action pt external)))
+    (avy-process
+     (mapcar #'cdr (ace-link--eww-collect))
+     (avy--style-fn avy-style))))
 
 (declare-function eww-follow-link "eww")
 
@@ -358,11 +364,11 @@ If EXTERNAL is double prefix, browse in new buffer."
   "Open a visible link in an `w3m-mode' buffer."
   (interactive)
   (require 'w3m)
-  (let ((pt (avy-with ace-link-w3m
-              (avy-process
-               (mapcar #'cdr (ace-link--w3m-collect))
-               (avy--style-fn avy-style)))))
-    (ace-link--w3m-action pt)))
+  (avy-with ace-link-w3m
+    (setq avy-action #'ace-link--w3m-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--w3m-collect))
+     (avy--style-fn avy-style))))
 
 (declare-function w3m-view-this-url "w3m")
 
@@ -398,11 +404,11 @@ If EXTERNAL is double prefix, browse in new buffer."
 (defun ace-link-compilation ()
   "Open a visible link in a `compilation-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-compilation
-              (avy-process
-               (mapcar #'cdr (ace-link--eww-collect 'help-echo))
-               (avy--style-fn avy-style)))))
-    (ace-link--compilation-action pt)))
+  (avy-with ace-link-compilation
+    (setq avy-action #'ace-link--compilation-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--eww-collect 'help-echo))
+     (avy--style-fn avy-style))))
 
 (defun ace-link--compilation-action (pt)
   (when (number-or-marker-p pt)
@@ -430,11 +436,11 @@ If EXTERNAL is double prefix, browse in new buffer."
             (select-window win)
             (select-frame-set-input-focus (window-frame win)))
         (user-error "No article window found")))
-    (let ((pt (avy-with ace-link-gnus
-                (avy-process
-                 (ace-link--gnus-collect)
-                 (avy--style-fn avy-style)))))
-      (ace-link--gnus-action pt))))
+    (avy-with ace-link-gnus
+      (setq avy-action #'ace-link--gnus-action)
+      (avy-process
+       (ace-link--gnus-collect)
+       (avy--style-fn avy-style)))))
 
 (defun ace-link--gnus-action (pt)
   (when (number-or-marker-p pt)
@@ -535,11 +541,11 @@ consider mu4e’s links."
   (interactive)
   (if (bound-and-true-p mu4e-view-use-gnus)
       (ace-link-gnus)
-    (let ((pt (avy-with ace-link-mu4e
-                (avy-process
-                 (mapcar #'cdr (ace-link--email-view-html-collect t))
-                 (avy--style-fn avy-style)))))
-      (ace-link--mu4e-action pt))))
+    (avy-with ace-link-mu4e
+      (setq avy-action #'ace-link--mu4e-action)
+      (avy-process
+       (mapcar #'cdr (ace-link--email-view-html-collect t))
+       (avy--style-fn avy-style)))))
 
 (declare-function shr-browse-url "shr")
 (declare-function mu4e~view-browse-url-from-binding "ext:mu4e-view")
@@ -562,17 +568,16 @@ consider mu4e’s links."
   "Open a visible link in a `notmuch-show' buffer.
 Only consider the 'text/plain' portion of the buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-notmuch-plain
-              (avy-process
-               (ace-link--email-view-plain-collect)
-               #'avy--overlay-pre))))
-    (when pt
-      (ace-link--notmuch-plain-action pt))))
+  (avy-with ace-link-notmuch-plain
+    (setq avy-action #'ace-link--notmuch-plain-action)
+    (avy-process
+     (ace-link--email-view-plain-collect)
+     #'avy--overlay-pre)))
 
 (defun ace-link--notmuch-plain-action (pt)
   "Open link at PT in a `notmuch-show' buffer.
 Only works in 'text/plain'"
-  (when (number-or-marker-p pt)
+  (when (and pt (number-or-marker-p pt))
     (goto-char pt)
     (browse-url-at-point)))
 
@@ -583,11 +588,11 @@ Only consider the 'text/html' portion of the buffer."
   (interactive)
   (if (bound-and-true-p mu4e-view-use-gnus)
       (ace-link-gnus)
-    (let ((pt (avy-with ace-link-mu4e
-                (avy-process
-                 (mapcar #'cdr (ace-link--email-view-html-collect))
-                 (avy--style-fn avy-style)))))
-      (ace-link--mu4e-action pt))))
+    (avy-with ace-link-mu4e
+      (setq avy-action #'ace-link--notmuch-html-action)
+      (avy-process
+       (mapcar #'cdr (ace-link--email-view-html-collect))
+       (avy--style-fn avy-style)))))
 
 (defun ace-link--notmuch-html-action (pt)
   "Open link at PT in a `notmuch-show' buffer.
@@ -601,14 +606,11 @@ Only works in 'text/html'"
   "Open a visible link in `notmuch-show' buffer.
 Consider both the links in 'text/plain' and 'text/html'."
   (interactive)
-  (let ((match (avy-with ace-link-notmuch
-                 (avy-process
-                  (ace-link--notmuch-collect)
-                  #'avy--overlay-pre))))
-    (when match
-      (let ((pt (car match))
-            (fn (cdr match)))
-        (funcall fn pt)))))
+  (avy-with ace-link-notmuch
+    (setq avy-action #'ace-link--notmuch-action)
+    (avy-process
+     (ace-link--notmuch-collect)
+     #'avy--overlay-pre)))
 
 (defun ace-link--notmuch-collect ()
   "Collect the positions of visible links in `notmuch-show' buffer.
@@ -616,12 +618,13 @@ Considers the links in 'text/plain' and 'text/html'.
 Returns a list of cons \( fn . pt ) where FN is the function to
 call at PT."
   (append
-   (mapcar (lambda (x)
-             (cons x #'ace-link--notmuch-plain-action))
-           (ace-link--email-view-plain-collect))
-   (mapcar (lambda (x)
-             (cons (cdr x) #'ace-link--notmuch-html-action))
-           (ace-link--email-view-html-collect))))
+   (ace-link--email-view-plain-collect)
+   (mapcar #'cdr (ace-link--email-view-html-collect))))
+
+(defun ace-link--notmuch-action (pt)
+  (if (get-text-property pt 'shr-link)
+      (ace-link--notmuch-html-action pt)
+    (ace-link--notmuch-plain-action pt)))
 
 ;;* `ace-link-org'
 ;;;###autoload
@@ -629,11 +632,11 @@ call at PT."
   "Open a visible link in an `org-mode' buffer."
   (interactive)
   (require 'org)
-  (let ((pt (avy-with ace-link-org
-               (avy-process
-                (mapcar #'cdr (ace-link--org-collect))
-                (avy--style-fn avy-style)))))
-    (ace-link--org-action pt)))
+  (avy-with ace-link-org
+    (setq avy-action #'ace-link--org-action)
+    (avy-process
+     (mapcar #'cdr (ace-link--org-collect))
+     (avy--style-fn avy-style))))
 
 (declare-function org-open-at-point "org")
 (declare-function outline-invisible-p "outline")
@@ -700,11 +703,11 @@ call at PT."
 (defun ace-link-xref ()
   "Open a visible link in an `xref--xref-buffer-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-xref
-              (avy-process
-               (ace-link--xref-collect)
-               (avy--style-fn avy-style)))))
-    (ace-link--xref-action pt)))
+  (avy-with ace-link-xref
+    (setq avy-action #'ace-link--xref-action)
+    (avy-process
+     (ace-link--xref-collect)
+     (avy--style-fn avy-style))))
 
 (declare-function xref-goto-xref "xref")
 
@@ -730,11 +733,11 @@ call at PT."
 (defun ace-link-custom ()
   "Open a visible link in an `Custom-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-custom
-              (avy-process
-               (ace-link--custom-collect)
-               (avy--style-fn avy-style)))))
-    (ace-link--custom-action pt)))
+  (avy-with ace-link-custom
+    (setq avy-action #'ace-link--custom-action)
+    (avy-process
+     (ace-link--custom-collect)
+     (avy--style-fn avy-style))))
 
 (declare-function Custom-newline "cus-edit")
 
@@ -765,11 +768,11 @@ call at PT."
 (defun ace-link-addr ()
   "Open a visible link in a goto-address buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-addr
-               (avy-process
-                (ace-link--addr-collect)
-                (avy--style-fn avy-style)))))
-    (ace-link--addr-action pt)))
+  (avy-with ace-link-addr
+    (setq avy-action #'ace-link--addr-action)
+    (avy-process
+     (ace-link--addr-collect)
+     (avy--style-fn avy-style))))
 
 (defun ace-link--addr-action (pt)
   (when (number-or-marker-p pt)
@@ -789,11 +792,11 @@ call at PT."
 (defun ace-link-sldb ()
   "Interact with a frame or local variable in a sldb buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-sldb
-              (avy-process
-               (ace-link--sldb-collect)
-               (avy--style-fn avy-style)))))
-      (ace-link--sldb-action pt)))
+  (avy-with ace-link-sldb
+    (setq avy-action #'ace-link--sldb-action)
+    (avy-process
+     (ace-link--sldb-collect)
+     (avy--style-fn avy-style))))
 
 (declare-function sldb-default-action "slime")
 
@@ -831,11 +834,11 @@ call at PT."
 (defun ace-link-slime-xref ()
   "Open a visible link in an `slime-xref-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-slime-xref
-              (avy-process
-               (ace-link--slime-xref-collect)
-               (avy--style-fn avy-style)))))
-      (ace-link--slime-xref-action pt)))
+  (avy-with ace-link-slime-xref
+    (setq avy-action #'ace-link--slime-xref-action)
+    (avy-process
+     (ace-link--slime-xref-collect)
+     (avy--style-fn avy-style))))
 
 (declare-function slime-goto-xref "slime.el")
 
@@ -861,11 +864,11 @@ call at PT."
   "Interact with a value, an action or a range button in a
 `slime-inspector-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-slime-inspector
-              (avy-process
-               (ace-link--slime-inspector-collect)
-               (avy--style-fn avy-style)))))
-      (ace-link--slime-inspector-action pt)))
+  (avy-with ace-link-slime-inspector
+    (setq avy-action #'ace-link--slime-inspector-action)
+    (avy-process
+     (ace-link--slime-inspector-collect)
+     (avy--style-fn avy-style))))
 
 (declare-function slime-inspector-operate-on-point "slime.el")
 (declare-function slime-inspector-copy-down-to-repl "slime.el")
@@ -897,11 +900,11 @@ call at PT."
   "Interact with a value, an action or a range button in a
 `indium-inspector-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-indium-inspector
-              (avy-process
-               (ace-link--indium-inspector-collect)
-               (avy--style-fn avy-style)))))
-    (ace-link--indium-inspector-action pt)))
+  (avy-with ace-link-indium-inspector
+    (setq avy-action #'ace-link--indium-inspector-action)
+    (avy-process
+     (ace-link--indium-inspector-collect)
+     (avy--style-fn avy-style))))
 
 (defun ace-link--indium-inspector-action (pt)
   (when (numberp pt)
@@ -928,11 +931,11 @@ call at PT."
   "Interact with a value, an action or a range button in a
 `indium-debugger-frames-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-indium-debugger-frames
-              (avy-process
-               (ace-link--indium-debugger-frames-collect)
-               (avy--style-fn avy-style)))))
-    (ace-link--indium-debugger-frames-action pt)))
+  (avy-with ace-link-indium-debugger-frames
+    (setq avy-action #'ace-link--indium-debugger-frames-action)
+    (avy-process
+     (ace-link--indium-debugger-frames-collect)
+     (avy--style-fn avy-style))))
 
 (defun ace-link--indium-debugger-frames-action (pt)
   (when (numberp pt)
@@ -958,11 +961,11 @@ call at PT."
 (defun ace-link-cider-inspector ()
   "Open a visible link in a `cider-inspector-mode' buffer."
   (interactive)
-  (let ((pt (avy-with ace-link-cider-inspector
-              (avy-process
-               (ace-link--cider-inspector-collect)
-               (avy--style-fn avy-style)))))
-    (ace-link--cider-inspector-action pt)))
+  (avy-with ace-link-cider-inspector
+    (setq avy-action #'ace-link--cider-inspector-action)
+    (avy-process
+     (ace-link--cider-inspector-collect)
+     (avy--style-fn avy-style))))
 
 (declare-function cider-inspector-operate-on-point "ext:cider-inspector")
 
